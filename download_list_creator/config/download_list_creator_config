@@ -1,0 +1,15 @@
+################################################################################
+#
+# This file contains environment variables for running the Download List Creator
+# component in the Generate Program.
+#
+################################################################################
+
+# Location of Download List Creator Python component files.
+setenv OBPG_RUNENV_PYTHON_HOME /app/python    # NET edit. (Docker container)
+
+# Path to log file.
+setenv OBPG_DOWNLOAD_LIST_CREATOR_LOGGING /data/logs    # NET edit. (Docker container)
+
+# Location of Python3 executable
+setenv PYTHON3_EXECUTABLE_PATH /app/env/bin/python3    # NET edit. (Docker container)
