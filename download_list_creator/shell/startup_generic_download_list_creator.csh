@@ -18,7 +18,6 @@
 ################################################################################################################################################################
 
 # Set the environments.
-# source $HOME/generate/workspace/download_list_creator/config/download_list_creator_config    # NET edit. (Testing)
 source /app/config/download_list_creator_config    # NET edit. (Docker container)
 
 # By default, the output of this C-shell script will go to a log file defined in downloader_log_name variable below.  If you want to see the log file as it is running, the following can be set:
@@ -164,7 +163,6 @@ set num_days_back    = $6
 set granule_start_date = $7
 set granule_end_date   = $8
 
-# REMOVE FOR DOCKER CONTAINER
 # Fetch the optional granule start and end dates.
 set granule_start_date = ""
 set granule_end_date   = ""
@@ -321,28 +319,28 @@ if ($granule_start_date != "" && $granule_end_date != "") then
     # Reset the time zone back to GMT so we can have the correct current date when the Python script runs.
     setenv TZ GMT
     if $show_logging == 1 then
-        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g daily -s "$granule_start_date" -e "$granule_end_date -i $state_file_name"    # NET edit.
+        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level" -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -s "$granule_start_date" -e "$granule_end_date" -i "$state_file_name"    # NET edit.
         setenv TZ PST8PDT
         echo 'create_generic_download_list:END_PROCESSING_TIME ' `date`
     else
-        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g daily -s "$granule_start_date" -e "$granule_end_date" -i $state_file_name >> $downloader_log_name    # NET edit.
+        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level" -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -s "$granule_start_date" -e "$granule_end_date" -i "$state_file_name" >> $downloader_log_name    # NET edit.
         setenv TZ PST8PDT
         echo 'create_generic_download_list:END_PROCESSING_TIME ' `date` >> $downloader_log_name
     endif
 else
     # If the granule_start_date and granule_start_date are empty string, we use the -b crawl_current to get files from a few days ago.
     echo "RUNNING_CREATE_GENERIC_DOWNLOAD_LIST_WITH_EMPTY_START_AND_DATE"
-    echo "$python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t " "'$actual_filter'" " -d 0 -f 1 -a 1 -c 1 -g daily -b crawl_current -i $state_file_name -z $num_days_back"    # NET edit.
+    echo "$python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t " "'$actual_filter'" " -d 0 -f 1 -a 1 -c 1 -g daily -b crawl_current -i $state_file_name -z $num_days_back" >> $downloader_log_name   # NET edit.
     # Reset the time zone back to GMT so we can have the correct current date when the Python script runs.
     setenv TZ GMT
 
 
     if $show_logging == 1 then
-        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g daily -b crawl_current -i $state_file_name -z $num_days_back    # NET edit.
+        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level "-t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -b "crawl_current" -i "$state_file_name" -z "$num_days_back"    # NET edit.
         setenv TZ PST8PDT
         echo 'create_generic_download_list:END_PROCESSING_TIME ' `date`
     else
-        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g daily -b crawl_current -i $state_file_name -z $num_days_back >> $downloader_log_name    # NET edit.
+        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level" -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -b "crawl_current" -i "$state_file_name" -z "$num_days_back" >> $downloader_log_name    # NET edit.
         echo "$python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g daily -b crawl_current -i $state_file_name -z $num_days_back >> $downloader_log_name"    # NET edit.
         setenv TZ PST8PDT
         echo 'create_generic_download_list:END_PROCESSING_TIME ' `date` >> $downloader_log_name
