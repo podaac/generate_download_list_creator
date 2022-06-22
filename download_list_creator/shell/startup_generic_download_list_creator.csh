@@ -223,7 +223,7 @@ if ($processing_type == "VIIRS") then
    set actual_filter = "SNPP_VIIRS*202*"    # NET edit.
    echo "value_of_USE_2019_NAMING_PATTERN [$value_of_USE_2019_NAMING_PATTERN]"
    if ($value_of_USE_2019_NAMING_PATTERN == "true") then
-       set actual_filter = "SNPP_VIIRS*2021*.nc"
+       set actual_filter = "SNPP_VIIRS*202*.nc"
    endif
    if ($processing_level == "L2") then
        set name_snippet = "viirs_level2"
@@ -236,7 +236,7 @@ if ($processing_type == "MODIS_A") then
    set actual_processing_type = "aqua"
    set actual_filter = "A*202*.nc"    # NET edit.
    if ($value_of_USE_2019_NAMING_PATTERN == "true") then
-       set actual_filter = "A*2021*.nc"
+       set actual_filter = "A*202*.nc"
    endif
    set name_snippet = "modis_aqua"
    if ($processing_level == "L2") then
@@ -259,7 +259,7 @@ if ($processing_type == "MODIS_T") then
    set actual_processing_type = "terra"
    set actual_filter = "T*202*.nc";    # NET edit.
    if ($value_of_USE_2019_NAMING_PATTERN == "true") then
-       set actual_filter = "T*2021*.nc";
+       set actual_filter = "T*202*.nc";
    endif
    set name_snippet = "modis_terra"
    if ($processing_level == "L2") then
