@@ -12,6 +12,7 @@ It performs the following:
 # Standard imports
 import datetime
 import glob
+import logging
 import pathlib
 import subprocess
 
@@ -42,6 +43,8 @@ def event_handler(event, context):
     granule_start_date = event["granule_start_date"]
     granule_end_date = event["granule_end_date"]
     naming_pattern_indicator = event["naming_pattern_indicator"]
+    bucket = event["s3_bucket"]
+    sqs_queue = event["sqs_queue"]
     
     # Create required directories
     if not output_directory.is_dir():
@@ -62,6 +65,15 @@ def event_handler(event, context):
     log_file = pathlib.Path("/tmp/generate_logs").joinpath(f"{LOG_PREFIX[processing_type]}_{today}*_list_{digits_in_name}.log")
     txt_list = get_text_file_names(log_file)
     
+    # Get logger
+    logger = get_logger()
+    
+    # Upload txt files to S3 bucket
+    upload_text_files(txt_list, bucket, logger)
+    
+    # Push list of txt files to SQS queue
+    send_text_file_list(txt_list, sqs_queue, logger)
+    
 def get_text_file_names(log_file):
     """Retrieve a list of text file names from the log file."""
     
@@ -71,22 +83,62 @@ def get_text_file_names(log_file):
     txt_list = []
     for d in log_data: 
         if d.strip().startswith("/tmp/generate_output"): 
-            txt_list.append(d.strip().split(' ')[0])
+            txt_list.append(pathlib.Path(d.strip().split(' ')[0]))
     return txt_list
 
-def upload_txt_files(txt_files):
+def get_logger():
+    """Return a formatted logger object."""
+    
+    # Remove AWS Lambda logger
+    logger = logging.getLogger()
+    for handler in logger.handlers:
+        logger.removeHandler(handler)
+    
+    # Create a Logger object and set log level
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+
+    # Create a handler to console and set level
+    console_handler = logging.StreamHandler()
+
+    # Create a formatter and add it to the handler
+    console_format = logging.Formatter("%(asctime)s - %(module)s - %(levelname)s : %(message)s")
+    console_handler.setFormatter(console_format)
+
+    # Add handlers to logger
+    logger.addHandler(console_handler)
+
+    # Return logger
+    return logger
+
+def upload_text_files(txt_files, bucket, logger):
     """Upload text files to S3 bucket."""
     
-    
+    session = boto3.Session(profile_name="podaac-sandbox")
+    s3 = session.client("s3")
+    try:
+        for txt_file in txt_files:
+            response = s3.upload_file(str(txt_file), bucket, txt_file.name)
+            logger.info(f"File uploaded: {txt_file.name}")
+    except botocore.exceptions.ClientError as e:
+        logger.error(e)
+        logger.error("Program exit.")
+        exit(1)
 
-if __name__ == "__main__":
-    event = {
-        "search_pattern": "AQUA_MODIS.*L2.SST4.|AQUA_MODIS.*L2.OC.|AQUA_MODIS.*L2.SST.",
-        "processing_type": "MODIS_A",
-        "processing_level": "L2",
-        "num_days_back": "1",
-        "granule_start_date": "dummy",
-        "granule_end_date": "dummy",
-        "naming_pattern_indicator": "GHRSST_OBPG_USE_2019_NAMING_PATTERN_TRUE",
-    }
-    event_handler(event, None)
+def send_text_file_list(txt_files, sqs_queue, logger):
+    """Send comma separated list of text files to SQS queue."""
+    
+    txt_list = [txt_file.name for txt_file in txt_files]
+    
+    session = boto3.Session(profile_name="podaac-sandbox")
+    sqs = session.client("sqs")
+    try:
+        response = sqs.send_message(
+            QueueUrl=sqs_queue,
+            MessageBody=', '.join(txt_list)
+        )
+        logger.info(f"Sent following list to queue: {', '.join(txt_list)}")
+    except botocore.exceptions.ClientError as e:
+        logger.error(e)
+        logger.error("Program exit.")
+        exit(1)
