@@ -21,7 +21,7 @@ resource "aws_s3_bucket_ownership_controls" "aws_s3_bucket_idl_server_ownership"
 
 # SQS Queue
 resource "aws_sqs_queue" "aws_sqs_queue_dlc" {
-  name                       = "${var.prefix}-donwload-lists"
+  name                       = "${var.prefix}-download-lists"
   visibility_timeout_seconds = 300
   sqs_managed_sse_enabled    = true
 }
