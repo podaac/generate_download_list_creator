@@ -15,4 +15,4 @@ COPY . ${LAMBDA_TASK_ROOT}
 # FROM stage2 as stage3
 LABEL version="0.1" \
     description="Containerized Generate: Download List Creator"
-CMD [ "python/download_list_creator_lambda.event_handler" ]
+CMD [ "download_list_creator_lambda.event_handler" ]

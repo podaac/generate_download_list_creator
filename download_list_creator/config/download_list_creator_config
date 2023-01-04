@@ -6,7 +6,7 @@
 ################################################################################
 
 # Location of Download List Creator Python component files.
-setenv OBPG_RUNENV_PYTHON_HOME $LAMBDA_TASK_ROOT/python    # NET edit. (Docker container)
+setenv OBPG_RUNENV_PYTHON_HOME $LAMBDA_TASK_ROOT    # NET edit. (Docker container)
 
 # Path to log file.
 setenv OBPG_DOWNLOAD_LIST_CREATOR_LOGGING /tmp/generate_logs    # NET edit. (Docker container)

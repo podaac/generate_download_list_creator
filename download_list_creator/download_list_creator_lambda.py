@@ -128,7 +128,7 @@ def upload_text_files(txt_files, bucket, key, logger):
     s3 = boto3.client("s3")
     try:
         for txt_file in txt_files:
-            response = s3.upload_file(str(txt_file), bucket, f"{key}/{txt_file.name}")
+            response = s3.upload_file(str(txt_file), bucket, f"{key}/{txt_file.name}", ExtraArgs={"ServerSideEncryption": "aws:kms"})
             logger.info(f"File uploaded: {key}/{txt_file.name}")
     except botocore.exceptions.ClientError as e:
         logger.error(e)
