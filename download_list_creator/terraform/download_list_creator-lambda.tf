@@ -88,6 +88,17 @@ resource "aws_s3_bucket_ownership_controls" "aws_s3_bucket_dlc_ownership" {
   }
 }
 
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "aws_s3_bucket_dlc_encryption" {
+  bucket = aws_s3_bucket.aws_s3_bucket_dlc.bucket
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm     = "aws:kms"
+      kms_master_key_id = "aws/s3"
+    }
+  }
+}
+
 # SQS Queue
 resource "aws_sqs_queue" "aws_sqs_queue_dlc" {
   name                       = "${var.prefix}-download-lists"
