@@ -53,7 +53,15 @@ resource "aws_iam_policy" "aws_lambda_dlc_execution_policy" {
         "Action" : [
           "s3:PutObject"
         ],
-        "Resource" : "${aws_s3_bucket.aws_s3_bucket_dlc.arn}"
+        "Resource" : "${aws_s3_bucket.aws_s3_bucket_dlc.arn}/*"
+      },
+      {
+        "Sid" : "AllowKMSKeyAccess",
+        "Effect" : "Allow",
+        "Action" : [
+          "kms:GenerateDataKey"
+        ],
+        "Resource" : "${data.aws_kms_key.aws_s3.arn}"
       },
       {
         "Sid" : "AllowSendMessage",
