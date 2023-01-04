@@ -1,10 +1,79 @@
+# AWS Lambda function
+resource "aws_lambda_function" "aws_lambda_download_list_creator" {
+  image_uri     = "${local.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/${var.prefix}-download-list-creator:latest"
+  function_name = "${var.prefix}-download-list-creator"
+  role          = aws_iam_role.aws_lambda_dlc_execution_role.arn
+  package_type  = "Image"
+  memory_size   = 3072
+  timeout       = 900
+}
+
+# AWS Lambda execution role & policy
+resource "aws_iam_role" "aws_lambda_dlc_execution_role" {
+  name = "${var.prefix}-lambda-dlc-execution-role"
+  assume_role_policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Principal" : {
+          "Service" : "lambda.amazonaws.com"
+        },
+        "Action" : "sts:AssumeRole"
+      }
+    ]
+  })
+  permissions_boundary = "arn:aws:iam::${local.account_id}:policy/NGAPShRoleBoundary"
+}
+
+resource "aws_iam_role_policy_attachment" "aws_lambda_dlc_execution_role_policy_attach" {
+  role       = aws_iam_role.aws_lambda_dlc_execution_role.name
+  policy_arn = aws_iam_policy.aws_lambda_dlc_execution_policy.arn
+}
+
+resource "aws_iam_policy" "aws_lambda_dlc_execution_policy" {
+  name        = "${var.prefix}-lambda-dlc-execution-policy"
+  description = "Upload files to bucket and send messages to queue."
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Sid" : "AllowCreatePutLogs",
+        "Effect" : "Allow",
+        "Action" : [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        "Resource" : "arn:aws:logs:*:*:*"
+      },
+      {
+        "Sid" : "AllowPutObject",
+        "Effect" : "Allow",
+        "Action" : [
+          "s3:PutObject"
+        ],
+        "Resource" : "${aws_s3_bucket.aws_s3_bucket_dlc.arn}"
+      },
+      {
+        "Sid" : "AllowSendMessage",
+        "Effect" : "Allow",
+        "Action" : [
+          "sqs:SendMessage"
+        ],
+        "Resource" : "${aws_sqs_queue.aws_sqs_queue_dlc.arn}"
+      }
+    ]
+  })
+}
+
 # S3 bucket to hold text files
 resource "aws_s3_bucket" "aws_s3_bucket_dlc" {
   bucket = "${var.prefix}-download-lists"
   tags   = { Name = "${var.prefix}-download-lists" }
 }
 
-resource "aws_s3_bucket_public_access_block" "aws_s3_bucket_idl_server_public_block" {
+resource "aws_s3_bucket_public_access_block" "aws_s3_bucket_dlc_public_block" {
   bucket                  = aws_s3_bucket.aws_s3_bucket_dlc.id
   block_public_acls       = true
   block_public_policy     = true
@@ -12,7 +81,7 @@ resource "aws_s3_bucket_public_access_block" "aws_s3_bucket_idl_server_public_bl
   restrict_public_buckets = true
 }
 
-resource "aws_s3_bucket_ownership_controls" "aws_s3_bucket_idl_server_ownership" {
+resource "aws_s3_bucket_ownership_controls" "aws_s3_bucket_dlc_ownership" {
   bucket = aws_s3_bucket.aws_s3_bucket_dlc.id
   rule {
     object_ownership = "BucketOwnerEnforced"
