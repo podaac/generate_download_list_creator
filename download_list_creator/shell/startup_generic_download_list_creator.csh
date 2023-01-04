@@ -18,7 +18,7 @@
 ################################################################################################################################################################
 
 # Set the environments.
-source /app/config/download_list_creator_config    # NET edit. (Docker container)
+source $LAMBDA_TASK_ROOT/config/download_list_creator_config    # NET edit. (Docker container)
 
 # By default, the output of this C-shell script will go to a log file defined in downloader_log_name variable below.  If you want to see the log file as it is running, the following can be set:
 #

@@ -13,6 +13,7 @@ It performs the following:
 import datetime
 import glob
 import logging
+import os
 import pathlib
 import subprocess
 
@@ -53,10 +54,11 @@ def event_handler(event, context):
         state_file_name.parent.mkdir(parents=True, exist_ok=True)
         
     # Execute shell script
-    subprocess.run(["/home/tebaldi/generate/workspace/generate/download_list_creator/shell/startup_generic_download_list_creator.csh", \
+    lambda_task_root = os.getenv('LAMBDA_TASK_ROOT')
+    subprocess.run([f"{lambda_task_root}/shell/startup_generic_download_list_creator.csh", \
         search_pattern, output_directory, processing_type, processing_level, \
         state_file_name, num_days_back, granule_start_date, granule_end_date, \
-        naming_pattern_indicator], cwd="/home/tebaldi/generate/workspace/generate/download_list_creator/shell")   # TODO Change to LAMBDA ROOT TASK ENV VAR
+        naming_pattern_indicator], cwd=f"{lambda_task_root}/shell")
     
     # Get list of text file name(s)
     tz = pytz.timezone("America/Los_Angeles")
@@ -73,6 +75,9 @@ def event_handler(event, context):
     
     # Push list of txt files to SQS queue
     send_text_file_list(txt_list, sqs_queue, logger)
+    
+    end = datetime.datetime.now()
+    logger.info(f"Execution time - {end - start}.")
     
 def get_text_file_names(log_file):
     """Retrieve a list of text file names from the log file."""
@@ -114,8 +119,7 @@ def get_logger():
 def upload_text_files(txt_files, bucket, logger):
     """Upload text files to S3 bucket."""
     
-    session = boto3.Session(profile_name="podaac-sandbox")
-    s3 = session.client("s3")
+    s3 = boto3.client("s3")
     try:
         for txt_file in txt_files:
             response = s3.upload_file(str(txt_file), bucket, txt_file.name)
@@ -130,8 +134,7 @@ def send_text_file_list(txt_files, sqs_queue, logger):
     
     txt_list = [txt_file.name for txt_file in txt_files]
     
-    session = boto3.Session(profile_name="podaac-sandbox")
-    sqs = session.client("sqs")
+    sqs = boto3.client("sqs")
     try:
         response = sqs.send_message(
             QueueUrl=sqs_queue,
