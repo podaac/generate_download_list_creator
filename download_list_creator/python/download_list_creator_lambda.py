@@ -29,23 +29,27 @@ LOG_PREFIX = {
     "VIIRS": "viirs_level2_VIIRS_download_list_creator_output"
 }
 
+DS_KEY = {
+    "MODIS_A": "aqua",
+    "MODIS_T": "terra",
+    "VIIRS": "viirs"
+}
+
 def event_handler(event, context):
     """Parse EventBridge schedule event for arguments and run the list creator."""
     
     start = datetime.datetime.now()
     
     # Arguments
-    search_pattern = event["search_pattern"]
+    search_pattern = event["detail"]["search_pattern"]
     output_directory = pathlib.Path("/tmp/generate_output")
-    processing_type = event["processing_type"]
-    processing_level = event["processing_level"]
-    state_file_name = pathlib.Path(f"/tmp/generate_state_file/{event['processing_type'].lower()}.txt")
-    num_days_back = event["num_days_back"]
-    granule_start_date = event["granule_start_date"]
-    granule_end_date = event["granule_end_date"]
-    naming_pattern_indicator = event["naming_pattern_indicator"]
-    bucket = event["s3_bucket"]
-    sqs_queue = event["sqs_queue"]
+    processing_type = event["detail"]["processing_type"]
+    processing_level = event["detail"]["processing_level"]
+    state_file_name = pathlib.Path(f"/tmp/generate_state_file/{processing_type.lower()}.txt")
+    num_days_back = event["detail"]["num_days_back"]
+    granule_start_date = event["detail"]["granule_start_date"]
+    granule_end_date = event["detail"]["granule_end_date"]
+    naming_pattern_indicator = event["detail"]["naming_pattern_indicator"]
     
     # Create required directories
     if not output_directory.is_dir():
@@ -71,9 +75,11 @@ def event_handler(event, context):
     logger = get_logger()
     
     # Upload txt files to S3 bucket
-    upload_text_files(txt_list, bucket, logger)
+    bucket = f"{event['detail']['prefix']}-download-lists"
+    upload_text_files(txt_list, bucket, DS_KEY[processing_type], logger)
     
     # Push list of txt files to SQS queue
+    sqs_queue = f"https://sqs.{event['region']}.amazonaws.com/{event['account']}/{event['detail']['prefix']}-download-lists"
     send_text_file_list(txt_list, sqs_queue, logger)
     
     end = datetime.datetime.now()
@@ -116,14 +122,14 @@ def get_logger():
     # Return logger
     return logger
 
-def upload_text_files(txt_files, bucket, logger):
+def upload_text_files(txt_files, bucket, key, logger):
     """Upload text files to S3 bucket."""
     
     s3 = boto3.client("s3")
     try:
         for txt_file in txt_files:
-            response = s3.upload_file(str(txt_file), bucket, txt_file.name)
-            logger.info(f"File uploaded: {txt_file.name}")
+            response = s3.upload_file(str(txt_file), bucket, f"{key}/{txt_file.name}")
+            logger.info(f"File uploaded: {key}/{txt_file.name}")
     except botocore.exceptions.ClientError as e:
         logger.error(e)
         logger.error("Program exit.")
@@ -133,7 +139,6 @@ def send_text_file_list(txt_files, sqs_queue, logger):
     """Send comma separated list of text files to SQS queue."""
     
     txt_list = [txt_file.name for txt_file in txt_files]
-    
     sqs = boto3.client("sqs")
     try:
         response = sqs.send_message(
