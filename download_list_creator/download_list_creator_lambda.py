@@ -57,6 +57,12 @@ def event_handler(event, context):
     if not state_file_name.parent.is_dir():
         state_file_name.parent.mkdir(parents=True, exist_ok=True)
         
+    # Check if state file exists and pull from S3 to /tmp if it does
+    s3_client = boto3.client("s3")
+    bucket = f"{event['detail']['prefix']}-download-lists"
+    logger = get_logger()
+    get_s3_state_file(s3_client, bucket, state_file_name, logger)
+        
     # Execute shell script
     lambda_task_root = os.getenv('LAMBDA_TASK_ROOT')
     subprocess.run([f"{lambda_task_root}/shell/startup_generic_download_list_creator.csh", \
@@ -69,34 +75,28 @@ def event_handler(event, context):
     today = datetime.datetime.now(tz).strftime("%m_%d_%y_%H")
     digits_in_name = "0001"
     log_file = pathlib.Path("/tmp/generate_logs").joinpath(f"{LOG_PREFIX[processing_type]}_{today}*_list_{digits_in_name}.log")
+    log_file = glob.glob(str(log_file))[0]
     txt_list = get_text_file_names(log_file)
-    
-    # Get logger
-    logger = get_logger()
-    
-    # Upload txt files to S3 bucket
-    bucket = f"{event['detail']['prefix']}-download-lists"
-    upload_text_files(txt_list, bucket, DS_KEY[processing_type], logger)
-    
-    # Push list of txt files to SQS queue
-    sqs_queue = f"https://sqs.{event['region']}.amazonaws.com/{event['account']}/{event['detail']['prefix']}-download-lists"
-    send_text_file_list(txt_list, sqs_queue, logger)
+
+    if len(txt_list) != 0:
+        # Upload txt files to S3 bucket
+        upload_text_files(s3_client, txt_list, bucket, DS_KEY[processing_type], logger)
+        
+        # Push list of txt files to SQS queue
+        sqs_queue = f"https://sqs.{event['region']}.amazonaws.com/{event['account']}/{event['detail']['prefix']}-download-lists"
+        send_text_file_list(txt_list, sqs_queue, logger)
+        
+        # Upload state file to S3 bucket
+        upload_state_file(s3_client, state_file_name, bucket, logger)
+        
+        # Delete files
+        delete_files(txt_list, state_file_name, log_file, logger)
+    else:
+        logger.info("No new downloads were found.")
     
     end = datetime.datetime.now()
     logger.info(f"Execution time - {end - start}.")
     
-def get_text_file_names(log_file):
-    """Retrieve a list of text file names from the log file."""
-    
-    log_file = glob.glob(str(log_file))[0]
-    with open(log_file) as fh:
-        log_data = fh.read().splitlines()
-    txt_list = []
-    for d in log_data: 
-        if d.strip().startswith("/tmp/generate_output"): 
-            txt_list.append(pathlib.Path(d.strip().split(' ')[0]))
-    return txt_list
-
 def get_logger():
     """Return a formatted logger object."""
     
@@ -122,15 +122,41 @@ def get_logger():
     # Return logger
     return logger
 
-def upload_text_files(txt_files, bucket, key, logger):
+def get_s3_state_file(s3_client, bucket, state_file_name, logger):
+    """Retrieve state file from S3 bucket if it exists."""
+    
+    try:
+        response = s3_client.download_file(bucket, f"state_files/{state_file_name.name}", str(state_file_name))
+        logger.info(f"State file copied: {state_file_name}")
+    except botocore.exceptions.ClientError as e:
+        if e.response["Error"]["Code"] == "404":
+            logger.info(f"State file does not exist: state_files/{state_file_name.name}")
+        else:
+            logger.error("Problem retrieving state file.")
+            logger.error(e)
+            logger.error("Program exit.")
+            exit(1)
+
+def get_text_file_names(log_file):
+    """Retrieve a list of text file names from the log file."""
+    
+    with open(log_file) as fh:
+        log_data = fh.read().splitlines()
+    txt_list = []
+    for d in log_data: 
+        if d.strip().startswith("/tmp/generate_output"): 
+            txt_list.append(pathlib.Path(d.strip().split(' ')[0]))
+    return txt_list
+
+def upload_text_files(s3_client, txt_files, bucket, key, logger):
     """Upload text files to S3 bucket."""
     
-    s3 = boto3.client("s3")
     try:
         for txt_file in txt_files:
-            response = s3.upload_file(str(txt_file), bucket, f"{key}/{txt_file.name}", ExtraArgs={"ServerSideEncryption": "aws:kms"})
+            response = s3_client.upload_file(str(txt_file), bucket, f"{key}/{txt_file.name}", ExtraArgs={"ServerSideEncryption": "aws:kms"})
             logger.info(f"File uploaded: {key}/{txt_file.name}")
     except botocore.exceptions.ClientError as e:
+        logger.error("Problem uploading text files.")
         logger.error(e)
         logger.error("Program exit.")
         exit(1)
@@ -147,6 +173,30 @@ def send_text_file_list(txt_files, sqs_queue, logger):
         )
         logger.info(f"Sent following list to queue: {', '.join(txt_list)}")
     except botocore.exceptions.ClientError as e:
+        logger.error("Problem sending file list to queue.")
         logger.error(e)
         logger.error("Program exit.")
         exit(1)
+        
+def upload_state_file(s3_client, state_file, bucket, logger):
+    """Upload state file to S3 bucket."""
+    
+    try:
+        response = s3_client.upload_file(str(state_file), bucket, f"state_files/{state_file.name}", ExtraArgs={"ServerSideEncryption": "aws:kms"})
+        logger.info(f"File uploaded: state_files/{state_file.name}")
+    except botocore.exceptions.ClientError as e:
+        logger.error("Problem uploading state file.")
+        logger.error(e)
+        logger.error("Program exit.")
+        exit(1)
+        
+def delete_files(txt_list, state_file_name, log_file, logger):
+    """Delete files created in /tmp directory."""
+    
+    for txt in txt_list:
+        txt.unlink()
+    state_file_name.unlink()
+    pathlib.Path(log_file).unlink()
+    
+    txt_list = [str(txt) for txt in txt_list]
+    logger.info(f"Deleted the following files: {', '.join(txt_list)}, {state_file_name.name}, {pathlib.Path(log_file).name}")

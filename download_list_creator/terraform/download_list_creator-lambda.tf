@@ -4,7 +4,7 @@ resource "aws_lambda_function" "aws_lambda_download_list_creator" {
   function_name = "${var.prefix}-download-list-creator"
   role          = aws_iam_role.aws_lambda_dlc_execution_role.arn
   package_type  = "Image"
-  memory_size   = 3072
+  memory_size   = 256
   timeout       = 900
 }
 
@@ -48,9 +48,18 @@ resource "aws_iam_policy" "aws_lambda_dlc_execution_policy" {
         "Resource" : "arn:aws:logs:*:*:*"
       },
       {
-        "Sid" : "AllowPutObject",
+        "Sid" : "AllowListBucket",
         "Effect" : "Allow",
         "Action" : [
+          "s3:ListBucket"
+        ],
+        "Resource" : "${aws_s3_bucket.aws_s3_bucket_dlc.arn}"
+      },
+      {
+        "Sid" : "AllowGetPutObject",
+        "Effect" : "Allow",
+        "Action" : [
+          "s3:GetObject",
           "s3:PutObject"
         ],
         "Resource" : "${aws_s3_bucket.aws_s3_bucket_dlc.arn}/*"
@@ -59,6 +68,7 @@ resource "aws_iam_policy" "aws_lambda_dlc_execution_policy" {
         "Sid" : "AllowKMSKeyAccess",
         "Effect" : "Allow",
         "Action" : [
+          "kms:Decrypt",
           "kms:GenerateDataKey"
         ],
         "Resource" : "${data.aws_kms_key.aws_s3.arn}"
