@@ -41,15 +41,15 @@ def event_handler(event, context):
     start = datetime.datetime.now()
     
     # Arguments
-    search_pattern = event["detail"]["search_pattern"]
+    search_pattern = event["search_pattern"]
     output_directory = pathlib.Path("/tmp/generate_output")
-    processing_type = event["detail"]["processing_type"]
-    processing_level = event["detail"]["processing_level"]
+    processing_type = event["processing_type"]
+    processing_level = event["processing_level"]
     state_file_name = pathlib.Path(f"/tmp/generate_state_file/{processing_type.lower()}.txt")
-    num_days_back = event["detail"]["num_days_back"]
-    granule_start_date = event["detail"]["granule_start_date"]
-    granule_end_date = event["detail"]["granule_end_date"]
-    naming_pattern_indicator = event["detail"]["naming_pattern_indicator"]
+    num_days_back = event["num_days_back"]
+    granule_start_date = event["granule_start_date"]
+    granule_end_date = event["granule_end_date"]
+    naming_pattern_indicator = event["naming_pattern_indicator"]
     
     # Create required directories
     if not output_directory.is_dir():
@@ -59,7 +59,7 @@ def event_handler(event, context):
         
     # Check if state file exists and pull from S3 to /tmp if it does
     s3_client = boto3.client("s3")
-    bucket = f"{event['detail']['prefix']}-download-lists"
+    bucket = f"{event['prefix']}-download-lists"
     logger = get_logger()
     get_s3_state_file(s3_client, bucket, state_file_name, logger)
         
@@ -83,7 +83,7 @@ def event_handler(event, context):
         upload_text_files(s3_client, txt_list, bucket, DS_KEY[processing_type], logger)
         
         # Push list of txt files to SQS queue
-        sqs_queue = f"https://sqs.{event['region']}.amazonaws.com/{event['account']}/{event['detail']['prefix']}-download-lists"
+        sqs_queue = f"https://sqs.{event['region']}.amazonaws.com/{event['account']}/{event['prefix']}-download-lists"
         send_text_file_list(txt_list, sqs_queue, logger)
         
         # Upload state file to S3 bucket
