@@ -2,6 +2,8 @@
 
 The downloade list creators searches the OBPG site and creates a list of files to download based on the arguments passed to the Docker container.
 
+Top-level Generate repo: https://github.com/podaac/generate
+
 ## pre-requisites to building
 
 None.
