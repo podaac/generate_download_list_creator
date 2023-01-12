@@ -12,6 +12,7 @@ It performs the following:
 # Standard imports
 import datetime
 import glob
+import json
 import logging
 import os
 import pathlib
@@ -84,7 +85,7 @@ def event_handler(event, context):
         
         # Push list of txt files to SQS queue
         sqs_queue = f"https://sqs.{event['region']}.amazonaws.com/{event['account']}/{event['prefix']}-download-lists"
-        send_text_file_list(txt_list, sqs_queue, logger)
+        send_text_file_list(txt_list, sqs_queue, event['prefix'], DS_KEY[processing_type], logger)
         
         # Upload state file to S3 bucket
         upload_state_file(s3_client, state_file_name, bucket, logger)
@@ -161,17 +162,21 @@ def upload_text_files(s3_client, txt_files, bucket, key, logger):
         logger.error("Program exit.")
         exit(1)
 
-def send_text_file_list(txt_files, sqs_queue, logger):
+def send_text_file_list(txt_files, sqs_queue, prefix, dataset, logger):
     """Send comma separated list of text files to SQS queue."""
     
-    txt_list = [txt_file.name for txt_file in txt_files]
+    out_dict = {
+        "prefix": prefix,
+        "dataset": dataset,
+        "txt_list": [txt_file.name for txt_file in txt_files]
+    }
     sqs = boto3.client("sqs")
     try:
         response = sqs.send_message(
             QueueUrl=sqs_queue,
-            MessageBody=', '.join(txt_list)
+            MessageBody=json.dumps(out_dict)
         )
-        logger.info(f"Sent following list to queue: {', '.join(txt_list)}")
+        logger.info(f"Sent following list to queue: {', '.join(out_dict['txt_list'])}")
     except botocore.exceptions.ClientError as e:
         logger.error("Problem sending file list to queue.")
         logger.error(e)
