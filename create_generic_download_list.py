@@ -63,7 +63,7 @@ from generic_split_search_dates_into_months import generic_split_search_dates_in
 #
 #   Just getting files that are current
 #
-#     % python create_generic_download_list.py -l L2 -t "V20*.nc" -n viirs  -d 0 -f 1 -a 1 -c 1 -g daily -b crawl_current -i output.txt -z 2
+#     % python create_generic_download_list.py -l L2 -t "V20*.nc" -n viirs  -d 0 -f 1 -a 1 -c 1 -g daily -b crawl_current -i output.txt -z 2 -x "/tmp/txt_file_list"
 #
 # Some notes:
 #     1.  For some strange reason the -t "V*.nc" results in zero file found.  We need to add the first 2 digits of the year to become:
@@ -72,41 +72,41 @@ from generic_split_search_dates_into_months import generic_split_search_dates_in
 
 #  Getting the first day the data is available
 #
-#     % python create_generic_download_list.py -l L2 -t "V20*.nc" -n viirs  -d 0 -f 1 -a 1 -c 1 -s "2012-01-02" -e "2012-01-02" -g daily 
+#     % python create_generic_download_list.py -l L2 -t "V20*.nc" -n viirs  -d 0 -f 1 -a 1 -c 1 -s "2012-01-02" -e "2012-01-02" -g daily -x "/tmp/txt_file_list"
 #
 #   Just SST toward the end of the day using filter and -s -e parameters:
 #
-#     % python create_generic_download_list.py -l L2 -t "V2016001000000*SST.nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2016-01-01" -e "2016-01-01" -g daily
-#     % python create_generic_download_list.py -l L2 -t "V2015001235*SST.nc"    -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g daily
+#     % python create_generic_download_list.py -l L2 -t "V2016001000000*SST.nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2016-01-01" -e "2016-01-01" -g daily -x "/tmp/txt_file_list"
+#     % python create_generic_download_list.py -l L2 -t "V2015001235*SST.nc"    -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g daily -x "/tmp/txt_file_list"
 #
 #   Just SST3 files toward the end of the day using filter and -s -e parameters:
 #
-#     % python create_generic_download_list.py -l L2 -t "V2015001235*SST3.nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g daily
+#     % python create_generic_download_list.py -l L2 -t "V2015001235*SST3.nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g daily -x "/tmp/txt_file_list"
 #
 #   Just Ocean Color files toward the end of the day using filter and -s -e parameters:
 #
-#     % python create_generic_download_list.py -l L2 -t "V2015001235*OC.nc"   -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g daily
+#     % python create_generic_download_list.py -l L2 -t "V2015001235*OC.nc"   -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g daily -x "/tmp/txt_file_list"
 #
 #   A whole day using filter (the name):
 #
-#     % python create_generic_download_list.py -l L2 -t "V2015001*_SNPP_*.nc"   -n viirs -d 0 -f 1 -a 1 -c 1 -g daily
+#     % python create_generic_download_list.py -l L2 -t "V2015001*_SNPP_*.nc"   -n viirs -d 0 -f 1 -a 1 -c 1 -g daily -x "/tmp/txt_file_list"
 #
 #   A whole day using -s and -e parameters (name can be general for 2015):
 #
-#     % python create_generic_download_list.py -l L2 -t "V2015*_SNPP_*.nc"      -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g daily
+#     % python create_generic_download_list.py -l L2 -t "V2015*_SNPP_*.nc"      -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g daily -x "/tmp/txt_file_list"
 #
 #   Getting all files for a whole day using filter (the name):
 #
-#     % python create_generic_download_list.py -l L2 -t "V2015001*_SNPP*.nc"  -n viirs -d 0 -f 1 -a 1 -c 1 -g daily
+#     % python create_generic_download_list.py -l L2 -t "V2015001*_SNPP*.nc"  -n viirs -d 0 -f 1 -a 1 -c 1 -g daily -x "/tmp/txt_file_list"
 #
 #   Getting all files for a whole day using -s and -e parameters (name can be general for 2015 year):
 #
-#     % python create_generic_download_list.py -l L2 -t "V2015*_SNPP*.nc"     -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g daily
+#     % python create_generic_download_list.py -l L2 -t "V2015*_SNPP*.nc"     -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g daily -x "/tmp/txt_file_list"
 #
 #
 # The following execution:
 #
-#     % python create_generic_download_list.py -l L2 -t "V2015001235*SST.nc"  -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g hourly
+#     % python create_generic_download_list.py -l L2 -t "V2015001235*SST.nc"  -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g hourly -x "/tmp/txt_file_list"
 #
 # Results in 2 files:
 #
@@ -115,7 +115,7 @@ from generic_split_search_dates_into_months import generic_split_search_dates_in
 #
 # The following execution:
 #
-#     % python create_generic_download_list.py -l L2 -t "V201500122*SST.nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g hourly
+#     % python create_generic_download_list.py -l L2 -t "V201500122*SST.nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g hourly -x "/tmp/txt_file_list"
 #
 # Results in 10 files:
 #
@@ -132,7 +132,7 @@ from generic_split_search_dates_into_months import generic_split_search_dates_in
 #
 # The following execution:
 #
-#     % python create_generic_download_list.py -l L2 -t "V201500122*SST3.nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g hourly
+#     % python create_generic_download_list.py -l L2 -t "V201500122*SST3.nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g hourly -x "/tmp/txt_file_list"
 #
 # Result in 4 files:
 #
@@ -144,7 +144,7 @@ from generic_split_search_dates_into_months import generic_split_search_dates_in
 #
 # The following execution:
 #
-#     % python create_generic_download_list.py -l L2 -t "V201500122*OC.nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g hourly
+#     % python create_generic_download_list.py -l L2 -t "V201500122*OC.nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g hourly -x "/tmp/txt_file_list"
 #
 # Result in 8 files:
 #      http://oceandata.sci.gsfc.nasa.gov/cgi/getfile/V2015001221200.L2_SNPP_OC.nc 218fbc57af77b7636470106f23873289d444bb76
@@ -158,7 +158,7 @@ from generic_split_search_dates_into_months import generic_split_search_dates_in
 #
 # The following execution:
 #
-#     % python create_generic_download_list.py -l L2 -t "V201500122*.nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g hourly
+#     % python create_generic_download_list.py -l L2 -t "V201500122*.nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g hourly -x "/tmp/txt_file_list"
 #
 # Result in 22 files (include OC, SST, SST3):
 #
@@ -188,7 +188,7 @@ from generic_split_search_dates_into_months import generic_split_search_dates_in
 #
 # The following execution:
 #
-#     % python create_generic_download_list.py -l L2 -t "V20150012*[L2_SNPP_OC,L2_SNPP_SST,L2_SNPP_SST3].nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g hourly
+#     % python create_generic_download_list.py -l L2 -t "V20150012*[L2_SNPP_OC,L2_SNPP_SST,L2_SNPP_SST3].nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g hourly -x "/tmp/txt_file_list"
 #
 # Result in 4 hourly files:
 #
@@ -201,7 +201,7 @@ from generic_split_search_dates_into_months import generic_split_search_dates_in
 #
 # The following execution:
 #
-#     % python create_generic_download_list.py -l L2 -t "V*[L2_SNPP_OC,L2_SNPP_SST,L2_SNPP_SST3].nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2013-01-01" -e "2013-01-14" -g daily
+#     % python create_generic_download_list.py -l L2 -t "V*[L2_SNPP_OC,L2_SNPP_SST,L2_SNPP_SST3].nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2013-01-01" -e "2013-01-14" -g daily -x "/tmp/txt_file_list"
 #
 # Result in 14 daily files:
 #
@@ -227,7 +227,7 @@ from generic_split_search_dates_into_months import generic_split_search_dates_in
 #
 # The following execution:
 #
-#     % python create_generic_download_list.py -l L2 -t "V*[L2_SNPP_OC,L2_SNPP_SST,L2_SNPP_SST3].nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g weekly
+#     % python create_generic_download_list.py -l L2 -t "V*[L2_SNPP_OC,L2_SNPP_SST,L2_SNPP_SST3].nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-01" -g weekly -x "/tmp/txt_file_list"
 #
 # Result in 1 weekly file(s):
 #
@@ -237,7 +237,7 @@ from generic_split_search_dates_into_months import generic_split_search_dates_in
 #
 # The following execution:
 #
-#     % python create_generic_download_list.py -l L2 -t "V*[L2_SNPP_OC,L2_SNPP_SST,L2_SNPP_SST3].nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-02" -g weekly
+#     % python create_generic_download_list.py -l L2 -t "V*[L2_SNPP_OC,L2_SNPP_SST,L2_SNPP_SST3].nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-02" -g weekly -x "/tmp/txt_file_list"
 #
 # Result in 1 weekly file(s):
 #
@@ -247,7 +247,7 @@ from generic_split_search_dates_into_months import generic_split_search_dates_in
 #
 # The following execution:
 #
-#     % python create_generic_download_list.py -l L2 -t "V*[L2_SNPP_OC,L2_SNPP_SST,L2_SNPP_SST3].nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-03" -g weekly
+#     % python create_generic_download_list.py -l L2 -t "V*[L2_SNPP_OC,L2_SNPP_SST,L2_SNPP_SST3].nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-01-03" -g weekly -x "/tmp/txt_file_list"
 #
 #INFO: Created file(s):
 #
@@ -255,7 +255,7 @@ from generic_split_search_dates_into_months import generic_split_search_dates_in
 #
 #INFO: all_names_found_in_execution 1577 in_files 1
 #
-#     % python create_generic_download_list.py -l L2 -t "V*[L2_SNPP_OC,L2_SNPP_SST,L2_SNPP_SST3].nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-03-01" -g weekly
+#     % python create_generic_download_list.py -l L2 -t "V*[L2_SNPP_OC,L2_SNPP_SST,L2_SNPP_SST3].nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2015-01-01" -e "2015-03-01" -g weekly -x "/tmp/txt_file_list"
 #
 # Result in 9 weekly files:
 #
@@ -276,7 +276,7 @@ from generic_split_search_dates_into_months import generic_split_search_dates_in
 #
 # The following execution:
 #
-#     % python create_generic_download_list.py -l L2 -t "V2016*[L2_SNPP_OC,L2_SNPP_SST,L2_SNPP_SST3].nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2016-01-01" -e "2016-03-01" -g monthly
+#     % python create_generic_download_list.py -l L2 -t "V2016*[L2_SNPP_OC,L2_SNPP_SST,L2_SNPP_SST3].nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2016-01-01" -e "2016-03-01" -g monthly -x "/tmp/txt_file_list"
 #
 # Result in 3 month files (Note that the previous command was executed on 3/1/2016 around 4:52 pm, which will have more files added before midnight):
 #
@@ -288,7 +288,7 @@ from generic_split_search_dates_into_months import generic_split_search_dates_in
 #
 # The following execution:
 #
-#     % python create_generic_download_list.py -l L2 -t "V2016*[L2_SNPP_OC,L2_SNPP_SST,L2_SNPP_SST3].nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2016-01-01" -e "2016-12-31" -g yearly
+#     % python create_generic_download_list.py -l L2 -t "V2016*[L2_SNPP_OC,L2_SNPP_SST,L2_SNPP_SST3].nc" -n viirs -d 0 -f 1 -a 1 -c 1 -s "2016-01-01" -e "2016-12-31" -g yearly -x "/tmp/txt_file_list"
 #
 #
 #INFO: START_CRAWL: crawl_start_time 1471456394.36 2016-08-17 10:53:14.357717
@@ -407,11 +407,11 @@ def main(argv):
     # Get the parameters from command line.
 
     try:
-        opts, args = getopt.getopt(argv,"hl:t:n:d:f:a:c:s:e:o:g:b:i:z:")
+        opts, args = getopt.getopt(argv,"hl:t:n:d:f:a:c:s:e:o:g:b:i:z:x:")
     except getopt.GetoptError:
-          print('python create_generic_download_list.py -l <dtype> -t <filter> -n <sensor> -d <std_only> -f <as_file> -a <addurl> -c <cksum> -s <sdate> -e <edate> -g <search_groupby> -b <search_current_only_value> -i <state_filename> -z <search_days_back>')
+          print('python create_generic_download_list.py -l <dtype> -t <filter> -n <sensor> -d <std_only> -f <as_file> -a <addurl> -c <cksum> -s <sdate> -e <edate> -g <search_groupby> -b <search_current_only_value> -i <state_filename> -z <search_days_back> -x <path_to_text_file>"')
           print('Example')
-          print('python create_generic_download_list.py -l l3m -t "A2016241*.nc" -n modis -d 0 -f 1 -a 1 -c 1 -s "2016-08-28" -e "2016-08-28" -g daily')
+          print('python create_generic_download_list.py -l l3m -t "A2016241*.nc" -n modis -d 0 -f 1 -a 1 -c 1 -s "2016-08-28" -e "2016-08-28" -g daily -x "/tmp/txt_file_list"')
           sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
@@ -444,6 +444,8 @@ def main(argv):
              print(state_filename)
         elif opt in ("-z"):
              search_days_back = int(arg) # How many days back to search for file processing date start.  Default is 1 
+        elif opt in ("-x"):
+             txt_file_list = arg
 
     encountered_error_flag = False;
     
@@ -483,7 +485,8 @@ def main(argv):
                                                                       search_psdate,      # "2015-01-01" (must be inside double quotes: file processing start date for search)
                                                                       search_pedate,      # "2015-01-01" (must be inside double quotes: file processing end date for search)
                                                                       search_days_back,   # How many days back to search for file processing date start.  Default is 1 to get files added the last 24 hours roughly.
-                                                                      pattern_to_look_for);
+                                                                      pattern_to_look_for,
+                                                                      txt_file_list);
             # end else portion of if (os.getenv("CRAWLER_SEARCH_SKIP_ACTUAL_DOWNLOAD","") == "true")
             processing_loop += 1;
         # end while ((not encountered_error_flag) and (processing_loop < max_loop))
@@ -509,7 +512,8 @@ def main(argv):
                                                               search_psdate,      # "2015-01-01" (must be inside double quotes: file processing start date for search)
                                                               search_pedate,      # "2015-01-01" (must be inside double quotes: file processing end date for search)
                                                               search_days_back,   # How many days back to search for file processing date start.  Default is 1 to get files added the last 24 hours roughly.
-                                                              pattern_to_look_for);
+                                                              pattern_to_look_for,
+                                                              txt_file_list);
 
     # Depend on if we had encountered an error or not, we exit with the appropriate code so an external program can decide what to do.
     if (encountered_error_flag):
@@ -533,7 +537,8 @@ def create_generic_download_list(search_dtype,       # L2
                                  search_psdate,      # "2015-01-01" (must be inside double quotes: file processing start date for search)
                                  search_pedate,      # "2015-01-01" (must be inside double quotes: file processing end date for search)
                                  search_days_back,   # How many days back to search for file processing date start.  Default is 1 to get files added the last 24 hours roughly.
-                                 pattern_to_look_for):
+                                 pattern_to_look_for,
+                                 txt_file_list):
 
 
     global g_debug_flag; # Make variable global.
@@ -1208,8 +1213,10 @@ def create_generic_download_list(search_dtype,       # L2
         print('');
         print('INFO: Created file(s):');
         print('');
-        for output_name in list_of_output_file_names:
-            print('     ',output_name);
+        with open(txt_file_list, 'a') as fh:
+            for output_name in list_of_output_file_names:
+                print('     ',output_name);
+                fh.write(f"{output_name.split(' ')[0]}\n")
         print('');
         print('INFO: all_names_found_in_execution',all_names_found_in_execution,'in_files',len(list_of_output_file_names));
 

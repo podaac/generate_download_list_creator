@@ -7,6 +7,10 @@ It performs the following:
 3. Get text file name(s) from log file.
 4. Upload text file(s) to S3 bucket.
 5. Push text file name(s) to queue.
+
+Notes:
+- Include year so that we don't have to change each year for the daily execution of Generate
+- If reprocessing make sure not to use the GHRSST_OBPG_USE_2019_NAMING_PATTERN_TRUE indicator argument and to set start and end dates
 """
 
 # Standard imports
@@ -50,7 +54,13 @@ def event_handler(event, context):
     num_days_back = event["num_days_back"]
     granule_start_date = event["granule_start_date"]
     granule_end_date = event["granule_end_date"]
-    naming_pattern_indicator = event["naming_pattern_indicator"]
+    naming_pattern_indicator = event["naming_pattern_indicator"] if "naming_pattern_indicator" in event.keys() else ""
+    if granule_start_date == "dummy" and granule_end_date == "dummy": 
+        year = f"{datetime.datetime.now().year}"
+    else:
+        year = "-1"
+        naming_pattern_indicator = ""
+    txt_file_list = pathlib.Path("/tmp/txt_file_list.txt")
     
     # Create required directories
     if not output_directory.is_dir():
@@ -68,17 +78,19 @@ def event_handler(event, context):
     lambda_task_root = os.getenv('LAMBDA_TASK_ROOT')
     subprocess.run([f"{lambda_task_root}/shell/startup_generic_download_list_creator.csh", \
         search_pattern, output_directory, processing_type, processing_level, \
-        state_file_name, num_days_back, granule_start_date, granule_end_date, \
-        naming_pattern_indicator], cwd=f"{lambda_task_root}/shell")
+        state_file_name, num_days_back, txt_file_list, year, \
+        granule_start_date, granule_end_date, naming_pattern_indicator], \
+        cwd=f"{lambda_task_root}/shell")
     
     # Get list of text file name(s)
-    tz = pytz.timezone("America/Los_Angeles")
-    today = datetime.datetime.now(tz).strftime("%m_%d_%y_%H")
-    digits_in_name = "0001"
-    log_file = pathlib.Path("/tmp/generate_logs").joinpath(f"{LOG_PREFIX[processing_type]}_{today}*_list_{digits_in_name}.log")
-    log_file = glob.glob(str(log_file))[0]
-    txt_list = get_text_file_names(log_file)
-
+    if txt_file_list.exists():
+        with open(txt_file_list) as fh:
+            txt_list = fh.read().splitlines()
+        txt_list = [output_directory.joinpath(txt) for txt in txt_list]
+    else:
+        txt_list = []
+    logger.info(txt_list)
+    
     if len(txt_list) != 0:
         # Upload txt files to S3 bucket
         upload_text_files(s3_client, txt_list, bucket, DS_KEY[processing_type], logger)
@@ -91,7 +103,7 @@ def event_handler(event, context):
         upload_state_file(s3_client, state_file_name, bucket, logger)
         
         # Delete files
-        delete_files(txt_list, state_file_name, log_file, logger)
+        delete_files(txt_list, state_file_name, txt_file_list, logger)
     else:
         logger.info("No new downloads were found.")
     
@@ -138,15 +150,11 @@ def get_s3_state_file(s3_client, bucket, state_file_name, logger):
             logger.error("Program exit.")
             exit(1)
 
-def get_text_file_names(log_file):
-    """Retrieve a list of text file names from the log file."""
+def get_text_file_names(txt_file_list):
+    """Retrieve a list of text file names from the text file."""
     
-    with open(log_file) as fh:
-        log_data = fh.read().splitlines()
-    txt_list = []
-    for d in log_data: 
-        if d.strip().startswith("/tmp/generate_output"): 
-            txt_list.append(pathlib.Path(d.strip().split(' ')[0]))
+    with open(txt_file_list) as fh:
+        txt_list = fh.read().splitlines()
     return txt_list
 
 def upload_text_files(s3_client, txt_files, bucket, key, logger):
@@ -195,13 +203,27 @@ def upload_state_file(s3_client, state_file, bucket, logger):
         logger.error("Program exit.")
         exit(1)
         
-def delete_files(txt_list, state_file_name, log_file, logger):
-    """Delete files created in /tmp directory."""
+def delete_files(txt_list, state_file_name, txt_file_list, logger):
+    """Delete files created in /tmp directory and remove logging handlers."""
     
     for txt in txt_list:
         txt.unlink()
-    state_file_name.unlink()
-    pathlib.Path(log_file).unlink()
+        logger.info(f"Deleted file: {txt.name}")
     
-    txt_list = [str(txt) for txt in txt_list]
-    logger.info(f"Deleted the following files: {', '.join(txt_list)}, {state_file_name.name}, {pathlib.Path(log_file).name}")
+    state_file_name.unlink()
+    logger.info(f"Deleted file: {state_file_name.name}")
+    
+    txt_file_list.unlink()
+    logger.info(f"Deleted file: {txt_file_list.name}")
+    
+    for handler in logger.handlers:
+        logger.removeHandler(handler)
+    
+# if __name__ == "__main__":
+#     import json
+#     import sys
+    
+#     event = sys.argv[1]
+#     json_event = json.loads(event)
+    
+#     event_handler(json_event, None)

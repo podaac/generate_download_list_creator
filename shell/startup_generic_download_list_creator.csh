@@ -81,11 +81,13 @@ endif
 #  processing_level = $4  {L2,L3m,L3b}
 #  state_file_name  = $5  How the script know files it has seen before by saving the state of previous query.
 #  num_days_back    = $6  How many days ago of file processing time do you want?  If just starting out, run it with 3 or 4 manually and then reduced to 1 as part of the crontab when all files have been processed.
+#  txt_file_list    = $7  Name of text file that contains a list of text files generated from OBPG query
+#  year             = $8  The year to use in the search filter if granule start and end dates are set to 'dummy'
 #
 # For fetching specific granule start and end dates, we have provided 2 optional parameters.  Which means the parameters state_file_name and num_days_back will not be used so any dummy parameters can be entered.
 #
-#  granule_start_date = $7
-#  granule_end_date   = $8
+#  granule_start_date = $9
+#  granule_end_date   = $10
 #
 # The format of the fields are 'yyyy-mm-dd' as in:
 #
@@ -102,25 +104,27 @@ if ($debug_mode == 1) then
     echo "arg_4 [$4]"
     echo "arg_5 [$5]"
     echo "arg_6 [$6]"
-    if ($num_args >= 8) then
-        echo "arg_7 [$7]"
-        echo "arg_8 [$8]"
+    echo "arg_7 [$7]"
+    echo "arg_8 [$8]"
+    if ($num_args >= 10) then
+        echo "arg_8 [$9]"
+        echo "arg_9 [$10]"
     endif
 endif
 
 # Fetch the optional granule start and end dates.
 set granule_start_date = ""
 set granule_end_date   = ""
-if ($num_args >= 8) then
-    set granule_start_date = $7
-    set granule_end_date   = $8
+if ($num_args >= 10) then
+    set granule_start_date = $9
+    set granule_end_date   = $10
 endif
 
 # Check for optional parameter to look for new names format.
-if ($num_args >= 9) then
-echo "9 [$9]"
-    if $9 == 'GHRSST_OBPG_USE_2019_NAMING_PATTERN_TRUE' then
-       echo "9 is GHRSST_OBPG_USE_2019_NAMING_PATTERN_TRUE, setting GHRSST_OBPG_USE_2019_NAMING_PATTERN to true"
+if ($num_args >= 10) then
+echo "11 [$11]"
+    if $11 == 'GHRSST_OBPG_USE_2019_NAMING_PATTERN_TRUE' then
+       echo "11 is GHRSST_OBPG_USE_2019_NAMING_PATTERN_TRUE, setting GHRSST_OBPG_USE_2019_NAMING_PATTERN to true"
        setenv GHRSST_OBPG_USE_2019_NAMING_PATTERN true
 echo "GHRSST_OBPG_USE_2019_NAMING_PATTERN [$GHRSST_OBPG_USE_2019_NAMING_PATTERN]"
     endif
@@ -160,19 +164,21 @@ set processing_type  = $3
 set processing_level = $4
 set state_file_name  = $5
 set num_days_back    = $6
-set granule_start_date = $7
-set granule_end_date   = $8
+set txt_file_list    = $7
+set year             = $8
+set granule_start_date = $9
+set granule_end_date   = $10
 
 # Fetch the optional granule start and end dates.
 set granule_start_date = ""
 set granule_end_date   = ""
-if ($num_args >= 8) then
-    set granule_start_date = $7
-    set granule_end_date   = $8
+if ($num_args >= 10) then
+    set granule_start_date = $9
+    set granule_end_date   = $10
 endif
 
 # Check for optional parameter and set to blanks if the dates parameters are dummy.
-if ($num_args >= 9) then
+if ($num_args >= 11) then
     # Set granule_start_date and granule_end_date back to empty string.
     if $granule_start_date == 'dummy' then
         set granule_start_date = ""
@@ -196,6 +202,8 @@ if ($debug_mode == 1) then
     echo "CRAWLER_SEARCH_DEFAULT_OUTPUT_DIRECTORY "  $CRAWLER_SEARCH_DEFAULT_OUTPUT_DIRECTORY
     echo "search_pattern                          " "$search_pattern"
     echo "state_file_name                         " $state_file_name
+    echo "year                                    " $year
+    echo "txt_file_list                           " $txt_file_list  
     echo "granule_start_date                      " $granule_start_date
     echo "granule_end_date                        " $granule_end_date
 endif
@@ -223,7 +231,7 @@ if ($processing_type == "VIIRS") then
    set actual_filter = "SNPP_VIIRS*202*"    # NET edit.
    echo "value_of_USE_2019_NAMING_PATTERN [$value_of_USE_2019_NAMING_PATTERN]"
    if ($value_of_USE_2019_NAMING_PATTERN == "true") then
-       set actual_filter = "SNPP_VIIRS*202*.nc"
+       set actual_filter = "SNPP_VIIRS*$year*.nc"
    endif
    if ($processing_level == "L2") then
        set name_snippet = "viirs_level2"
@@ -236,7 +244,7 @@ if ($processing_type == "MODIS_A") then
    set actual_processing_type = "aqua"
    set actual_filter = "A*202*.nc"    # NET edit.
    if ($value_of_USE_2019_NAMING_PATTERN == "true") then
-       set actual_filter = "A*202*.nc"
+       set actual_filter = "A*$year*.nc"
    endif
    set name_snippet = "modis_aqua"
    if ($processing_level == "L2") then
@@ -259,7 +267,7 @@ if ($processing_type == "MODIS_T") then
    set actual_processing_type = "terra"
    set actual_filter = "T*202*.nc";    # NET edit.
    if ($value_of_USE_2019_NAMING_PATTERN == "true") then
-       set actual_filter = "T*202*.nc";
+       set actual_filter = "T*$year*.nc";
    endif
    set name_snippet = "modis_terra"
    if ($processing_level == "L2") then
@@ -293,6 +301,8 @@ if ($processing_type == "AQUARIUS") then
    endif
 endif
 
+echo "ACTUAL SEARCH FILTER:   $actual_filter"
+
 # Reset the time zone back to GMT so we can have the correct current date when the Python script runs.
 setenv TZ GMT
 
@@ -315,33 +325,33 @@ echo 'create_generic_download_list:BEGIN_PROCESSING_TIME ' `date` | tee $downloa
 set python_exe = `printenv | grep PYTHON3_EXECUTABLE_PATH | awk -F= '{print $2}'`    # NET edit.
 if ($granule_start_date != "" && $granule_end_date != "") then
     echo "RUNNING_CREATE_GENERIC_DOWNLOAD_LIST_WITH_ACTUAL_START_AND_DATE"
-    echo "$python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t "  "'$actual_filter'" " -d 0 -f 1 -a 1 -c 1 -g daily -s $granule_start_date -e $granule_end_date -i $state_file_name"    # NET edit.
+    echo "$python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t "  "'$actual_filter'" " -d 0 -f 1 -a 1 -c 1 -g daily -s $granule_start_date -e $granule_end_date -i $state_file_name -x $txt_file_list"    # NET edit.
     # Reset the time zone back to GMT so we can have the correct current date when the Python script runs.
     setenv TZ GMT
     if $show_logging == 1 then
-        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level" -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -s "$granule_start_date" -e "$granule_end_date" -i "$state_file_name"    # NET edit.
+        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level" -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -s "$granule_start_date" -e "$granule_end_date" -i "$state_file_name" -x "$txt_file_list"    # NET edit.
         setenv TZ PST8PDT
         echo 'create_generic_download_list:END_PROCESSING_TIME ' `date`
     else
-        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level" -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -s "$granule_start_date" -e "$granule_end_date" -i "$state_file_name" | tee $downloader_log_name    # NET edit.
+        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level" -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -s "$granule_start_date" -e "$granule_end_date" -i "$state_file_name" -x "$txt_file_list" | tee $downloader_log_name    # NET edit.
         setenv TZ PST8PDT
         echo 'create_generic_download_list:END_PROCESSING_TIME ' `date` | tee $downloader_log_name
     endif
 else
     # If the granule_start_date and granule_start_date are empty string, we use the -b crawl_current to get files from a few days ago.
     echo "RUNNING_CREATE_GENERIC_DOWNLOAD_LIST_WITH_EMPTY_START_AND_DATE"
-    echo "$python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t " "'$actual_filter'" " -d 0 -f 1 -a 1 -c 1 -g daily -b crawl_current -i $state_file_name -z $num_days_back" | tee $downloader_log_name   # NET edit.
+    echo "$python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t " "'$actual_filter'" " -d 0 -f 1 -a 1 -c 1 -g daily -b crawl_current -i $state_file_name -z $num_days_back -x $txt_file_list" | tee $downloader_log_name   # NET edit.
     # Reset the time zone back to GMT so we can have the correct current date when the Python script runs.
     setenv TZ GMT
 
 
     if $show_logging == 1 then
-        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level "-t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -b "crawl_current" -i "$state_file_name" -z "$num_days_back"    # NET edit.
+        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level "-t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -b "crawl_current" -i "$state_file_name" -z "$num_days_back" -x "$txt_file_list"   # NET edit.
         setenv TZ PST8PDT
         echo 'create_generic_download_list:END_PROCESSING_TIME ' `date`
     else
-        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level" -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -b "crawl_current" -i "$state_file_name" -z "$num_days_back" | tee $downloader_log_name    # NET edit.
-        echo "$python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g daily -b crawl_current -i $state_file_name -z $num_days_back | tee $downloader_log_name"    # NET edit.
+        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level" -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -b "crawl_current" -i "$state_file_name" -z "$num_days_back" -x "$txt_file_list" | tee $downloader_log_name    # NET edit.
+        echo "$python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g daily -b crawl_current -i $state_file_name -z $num_days_back -x $txt_file_list | tee $downloader_log_name"    # NET edit.
         setenv TZ PST8PDT
         echo 'create_generic_download_list:END_PROCESSING_TIME ' `date` | tee $downloader_log_name
     endif
