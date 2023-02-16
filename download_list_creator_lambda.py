@@ -15,15 +15,14 @@ Notes:
 
 # Standard imports
 import datetime
-import glob
 import json
 import logging
 import os
 import pathlib
+import random
 import subprocess
 
 # Third-party imports
-import pytz
 import boto3
 import botocore
 
@@ -160,10 +159,13 @@ def get_text_file_names(txt_file_list):
 def upload_text_files(s3_client, txt_files, bucket, key, logger):
     """Upload text files to S3 bucket."""
     
+    # Unique ID in case file already exists in S3 bucket
+    uid = random.randint(1000, 9999)
+    
     try:
         for txt_file in txt_files:
-            response = s3_client.upload_file(str(txt_file), bucket, f"{key}/{txt_file.name}", ExtraArgs={"ServerSideEncryption": "aws:kms"})
-            logger.info(f"File uploaded: {key}/{txt_file.name}")
+            response = s3_client.upload_file(str(txt_file), bucket, f"{key}/{txt_file.name}_{uid}", ExtraArgs={"ServerSideEncryption": "aws:kms"})
+            logger.info(f"File uploaded: {key}/{txt_file.name}_{uid}")
     except botocore.exceptions.ClientError as e:
         logger.error("Problem uploading text files.")
         logger.error(e)
