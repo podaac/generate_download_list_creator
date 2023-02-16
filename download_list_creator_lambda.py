@@ -39,6 +39,8 @@ DS_KEY = {
     "VIIRS": "viirs"
 }
 
+UNIQUE_ID = random.randint(1000, 9999)    # To differentiate duplicate txt file names
+
 def event_handler(event, context):
     """Parse EventBridge schedule event for arguments and run the list creator."""
     
@@ -159,13 +161,10 @@ def get_text_file_names(txt_file_list):
 def upload_text_files(s3_client, txt_files, bucket, key, logger):
     """Upload text files to S3 bucket."""
     
-    # Unique ID in case file already exists in S3 bucket
-    uid = random.randint(1000, 9999)
-    
     try:
         for txt_file in txt_files:
-            response = s3_client.upload_file(str(txt_file), bucket, f"{key}/{txt_file.name}_{uid}", ExtraArgs={"ServerSideEncryption": "aws:kms"})
-            logger.info(f"File uploaded: {key}/{txt_file.name}_{uid}")
+            response = s3_client.upload_file(str(txt_file), bucket, f"{key}/{txt_file.name}_{UNIQUE_ID}", ExtraArgs={"ServerSideEncryption": "aws:kms"})
+            logger.info(f"File uploaded: {key}/{txt_file.name}_{UNIQUE_ID}")
     except botocore.exceptions.ClientError as e:
         logger.error("Problem uploading text files.")
         logger.error(e)
@@ -178,7 +177,7 @@ def send_text_file_list(txt_files, sqs_queue, prefix, dataset, logger):
     out_dict = {
         "prefix": prefix,
         "dataset": dataset,
-        "txt_list": [txt_file.name for txt_file in txt_files]
+        "txt_list": [f"{txt_file.name}_{UNIQUE_ID}" for txt_file in txt_files]
     }
     sqs = boto3.client("sqs")
     try:
