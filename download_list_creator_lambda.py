@@ -92,19 +92,29 @@ def event_handler(event, context):
         txt_list = []
     logger.info(txt_list)
     
-    if len(txt_list) != 0:
-        # Upload txt files to S3 bucket
-        upload_text_files(s3_client, txt_list, bucket, DS_KEY[processing_type], logger)
+    # Check pending jobs queue
+    sqs = boto3.client("sqs")
+    sqs_queue = f"https://sqs.{event['region']}.amazonaws.com/{event['account']}/{event['prefix']}-pending-jobs"
+    pending_txts = check_queue(sqs, sqs_queue, DS_KEY[processing_type], logger)
+    
+    if len(txt_list) != 0 or len(pending_txts) != 0:
         
+        if len(txt_list) != 0: 
+            # Upload txt files to S3 bucket
+            upload_text_files(s3_client, txt_list, bucket, DS_KEY[processing_type], logger)
+            
+            # Upload state file to S3 bucket
+            upload_state_file(s3_client, state_file_name, bucket, logger)
+            
+            # Delete files
+            delete_files(txt_list, state_file_name, txt_file_list, logger)
+            
         # Push list of txt files to SQS queue
         sqs_queue = f"https://sqs.{event['region']}.amazonaws.com/{event['account']}/{event['prefix']}-download-lists"
-        send_text_file_list(txt_list, sqs_queue, event['prefix'], DS_KEY[processing_type], logger)
+        txt_files = [f"{txt_file.name}_{UNIQUE_ID}" for txt_file in txt_list]
+        txt_files.extend(pending_txts)
+        send_text_file_list(sqs, txt_files, sqs_queue, event['prefix'], DS_KEY[processing_type], logger)
         
-        # Upload state file to S3 bucket
-        upload_state_file(s3_client, state_file_name, bucket, logger)
-        
-        # Delete files
-        delete_files(txt_list, state_file_name, txt_file_list, logger)
     else:
         logger.info("No new downloads were found.")
     
@@ -150,6 +160,44 @@ def get_s3_state_file(s3_client, bucket, state_file_name, logger):
             logger.error(e)
             logger.error("Program exit.")
             exit(1)
+            
+def check_queue(sqs, sqs_queue, dataset, logger):
+    """Check queue to see if there are any downloads from previous executions.
+    
+    Returns list of text files that contain downloads.
+    """
+    
+    # Read in queue nessages
+    try:
+        messages = sqs.receive_message(
+            QueueUrl=sqs_queue,
+            AttributeNames=["All"],
+            MessageAttributeNames=["dataset"],
+            MaxNumberOfMessages=10
+        )
+        
+        # Create list of messages for dataset
+        dlc_list = []
+        for message in messages["Messages"]:
+            if message["MessageAttributes"]["dataset"]["StringValue"] == dataset:
+                dlc_list.extend(json.loads(message["Body"]))
+                # Delete message
+                response = sqs.delete_message(
+                    QueueUrl=sqs_queue,
+                    ReceiptHandle=message["ReceiptHandle"]
+                )
+                logger.info(f"Found pending job(s): {message['Body']}")           
+                    
+    except botocore.exceptions.ClientError as e:
+        logger.error("Problem checking queue for pending jobs.")
+        logger.error(e)
+        logger.error("Program exit.")
+        exit(1)
+
+    except KeyError as e:
+        logger.info("No pending jobs found.")
+    
+    return list(set(dlc_list))
 
 def get_text_file_names(txt_file_list):
     """Retrieve a list of text file names from the text file."""
@@ -171,15 +219,14 @@ def upload_text_files(s3_client, txt_files, bucket, key, logger):
         logger.error("Program exit.")
         exit(1)
 
-def send_text_file_list(txt_files, sqs_queue, prefix, dataset, logger):
+def send_text_file_list(sqs, txt_files, sqs_queue, prefix, dataset, logger):
     """Send comma separated list of text files to SQS queue."""
     
     out_dict = {
         "prefix": prefix,
         "dataset": dataset,
-        "txt_list": [f"{txt_file.name}_{UNIQUE_ID}" for txt_file in txt_files]
+        "txt_list": txt_files
     }
-    sqs = boto3.client("sqs")
     try:
         response = sqs.send_message(
             QueueUrl=sqs_queue,
@@ -219,12 +266,3 @@ def delete_files(txt_list, state_file_name, txt_file_list, logger):
     
     for handler in logger.handlers:
         logger.removeHandler(handler)
-    
-# if __name__ == "__main__":
-#     import json
-#     import sys
-    
-#     event = sys.argv[1]
-#     json_event = json.loads(event)
-    
-#     event_handler(json_event, None)
