@@ -21,10 +21,14 @@ import os
 import pathlib
 import random
 import subprocess
+import sys
 
 # Third-party imports
 import boto3
 import botocore
+
+# Local imports
+from notify import notify
 
 # Constants
 LOG_PREFIX = {
@@ -118,6 +122,10 @@ def event_handler(event, context):
     else:
         logger.info("No new downloads were found.")
     
+    # Delete logger    
+    for handler in logger.handlers:
+        logger.removeHandler(handler) 
+    
     end = datetime.datetime.now()
     logger.info(f"Execution time - {end - start}.")
     
@@ -156,10 +164,8 @@ def get_s3_state_file(s3_client, bucket, state_file_name, logger):
         if e.response["Error"]["Code"] == "404":
             logger.info(f"State file does not exist: state_files/{state_file_name.name}")
         else:
-            logger.error("Problem retrieving state file.")
-            logger.error(e)
-            logger.error("Program exit.")
-            exit(1)
+            sigevent_description = f"Problem retrieving state file {state_file_name.name}."
+            handle_error(sigevent_description, e, logger)
             
 def check_queue(sqs, sqs_queue, dataset, logger):
     """Check queue to see if there are any downloads from previous executions.
@@ -189,10 +195,8 @@ def check_queue(sqs, sqs_queue, dataset, logger):
                 logger.info(f"Found pending job(s): {message['Body']}")           
                     
     except botocore.exceptions.ClientError as e:
-        logger.error("Problem checking queue for pending jobs.")
-        logger.error(e)
-        logger.error("Program exit.")
-        exit(1)
+        sigevent_description = "Problem checking queue for pending jobs."
+        handle_error(sigevent_description, e, logger)
 
     except KeyError as e:
         logger.info("No pending jobs found.")
@@ -214,10 +218,9 @@ def upload_text_files(s3_client, txt_files, bucket, key, logger):
             response = s3_client.upload_file(str(txt_file), bucket, f"{key}/{txt_file.name}_{UNIQUE_ID}", ExtraArgs={"ServerSideEncryption": "aws:kms"})
             logger.info(f"File uploaded: {key}/{txt_file.name}_{UNIQUE_ID}")
     except botocore.exceptions.ClientError as e:
-        logger.error("Problem uploading text files.")
-        logger.error(e)
-        logger.error("Program exit.")
-        exit(1)
+        txt_list = [ txt_file.name for txt_file in txt_files ]
+        sigevent_description = f"Problem uploading text files: {', '.join(txt_list)}."
+        handle_error(sigevent_description, e, logger)
 
 def send_text_file_list(sqs, txt_files, sqs_queue, prefix, dataset, logger):
     """Send comma separated list of text files to SQS queue."""
@@ -234,10 +237,8 @@ def send_text_file_list(sqs, txt_files, sqs_queue, prefix, dataset, logger):
         )
         logger.info(f"Sent following list to queue: {', '.join(out_dict['txt_list'])}")
     except botocore.exceptions.ClientError as e:
-        logger.error("Problem sending file list to queue.")
-        logger.error(e)
-        logger.error("Program exit.")
-        exit(1)
+        sigevent_description = f"Problem sending file list to downloads list queue: {', '.join(out_dict['txt_list'])}."
+        handle_error(sigevent_description, e, logger)
         
 def upload_state_file(s3_client, state_file, bucket, logger):
     """Upload state file to S3 bucket."""
@@ -245,11 +246,9 @@ def upload_state_file(s3_client, state_file, bucket, logger):
     try:
         response = s3_client.upload_file(str(state_file), bucket, f"state_files/{state_file.name}", ExtraArgs={"ServerSideEncryption": "aws:kms"})
         logger.info(f"File uploaded: state_files/{state_file.name}")
-    except botocore.exceptions.ClientError as e:
-        logger.error("Problem uploading state file.")
-        logger.error(e)
-        logger.error("Program exit.")
-        exit(1)
+    except botocore.exceptions.ClientError as e:       
+        sigevent_description = f"Problem uploading state file: {state_file.name}."
+        handle_error(sigevent_description, e, logger)
         
 def delete_files(txt_list, state_file_name, txt_file_list, logger):
     """Delete files created in /tmp directory and remove logging handlers."""
@@ -263,6 +262,13 @@ def delete_files(txt_list, state_file_name, txt_file_list, logger):
     
     txt_file_list.unlink()
     logger.info(f"Deleted file: {txt_file_list.name}")
+        
+def handle_error(sigevent_description, sigevent_data, logger):
+    """Handle errors by logging them and sending out a notification."""
     
-    for handler in logger.handlers:
-        logger.removeHandler(handler)
+    sigevent_type = "ERROR"
+    logger.error(sigevent_description)
+    logger.error(sigevent_data)
+    notify(logger, sigevent_type, sigevent_description, sigevent_data)
+    logger.error("Program exit.")
+    sys.exit(1)
