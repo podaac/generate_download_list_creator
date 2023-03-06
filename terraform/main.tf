@@ -29,6 +29,10 @@ data "aws_kms_key" "aws_s3" {
   key_id = "alias/aws/s3"
 }
 
+data "aws_sns_topic" "batch_failure_topic" {
+  name = "${var.prefix}-batch-job-failure"
+}
+
 # Local variables
 locals {
   account_id = data.aws_caller_identity.current.account_id
