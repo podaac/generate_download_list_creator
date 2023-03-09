@@ -104,8 +104,8 @@ def event_handler(event, context):
     
     # Check pending jobs queue
     sqs = boto3.client("sqs")
-    sqs_queue = f"https://sqs.{event['region']}.amazonaws.com/{event['account']}/{event['prefix']}-pending-jobs"
-    pending_txts = check_queue(sqs, sqs_queue, DS_KEY[processing_type], logger)
+    sqs_queue_pj = f"https://sqs.{event['region']}.amazonaws.com/{event['account']}/{event['prefix']}-pending-jobs"
+    pending_txts = check_queue(sqs, sqs_queue_pj, DS_KEY[processing_type], logger)
     
     if len(txt_list) != 0 or len(pending_txts) != 0:
         
@@ -120,10 +120,10 @@ def event_handler(event, context):
             delete_files(txt_list, state_file_name, txt_file_list, logger)
             
         # Push list of txt files to SQS queue
-        sqs_queue = f"https://sqs.{event['region']}.amazonaws.com/{event['account']}/{event['prefix']}-download-lists"
+        sqs_queue_dl = f"https://sqs.{event['region']}.amazonaws.com/{event['account']}/{event['prefix']}-download-lists"
         txt_files = [f"{txt_file.name}_{UNIQUE_ID}" for txt_file in txt_list]
         txt_files.extend(pending_txts)
-        send_text_file_list(sqs, txt_files, sqs_queue, event['prefix'], DS_KEY[processing_type], logger)
+        send_text_file_list(sqs, txt_files, sqs_queue_dl, event['prefix'], DS_KEY[processing_type], logger)
         
     else:
         logger.info("No new downloads were found.")
@@ -241,7 +241,7 @@ def send_text_file_list(sqs, txt_files, sqs_queue, prefix, dataset, logger):
             QueueUrl=sqs_queue,
             MessageBody=json.dumps(out_dict)
         )
-        logger.info(f"Sent following list to queue: {', '.join(out_dict['txt_list'])}")
+        logger.info(f"Sent following list to download lists queue: {', '.join(out_dict['txt_list'])}")
     except botocore.exceptions.ClientError as e:
         sigevent_description = f"Problem sending file list to downloads list queue: {', '.join(out_dict['txt_list'])}."
         handle_error(sigevent_description, e, logger)
