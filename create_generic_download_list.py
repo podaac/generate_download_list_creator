@@ -470,23 +470,29 @@ def main(argv):
                 print("CRAWLER_SEARCH_SKIP_ACTUAL_DOWNLOAD is true.  No downloading.")
                 print("    processing_loop",processing_loop,"max_loop",processing_loop,"search_sdate",search_sdate,"search_edate",search_edate);
             else:
-                encountered_error_flag = create_generic_download_list(search_dtype,       # L2
-                                                                      search_filter,      # "V2015001235*SST.nc" (must be inside double quotes)
-                                                                      search_sensor,      # viirs (This script support viirs sensor only)
-                                                                      search_std_only,    # Boolean, avoid non standard files
-                                                                      search_as_file,     # Boolean, get the result as a file.
-                                                                      search_addurl,      # Boolean, 1 will prepend "http://oceandata.sci.gsfc.nasa.gov/cgi/getfile/" to the file name.
-                                                                      checksum_flag,      # Boolean, 1 will result in the checksum of the file prepended to filename and a space.  This script will do some post processing to produce the correct output.
-                                                                      search_sdate,       # "2015-01-01" (must be inside double quotes)
-                                                                      search_edate,       # "2015-01-01" (must be inside double quotes)
-                                                                      search_groupby,     # {hourly,daily,weekly,monthly,yearly}
-                                                                      search_current_only_value,    
-                                                                      state_filename,     # Name of state file to use.  Default to empty string unless override with -i <state_filename>
-                                                                      search_psdate,      # "2015-01-01" (must be inside double quotes: file processing start date for search)
-                                                                      search_pedate,      # "2015-01-01" (must be inside double quotes: file processing end date for search)
-                                                                      search_days_back,   # How many days back to search for file processing date start.  Default is 1 to get files added the last 24 hours roughly.
-                                                                      pattern_to_look_for,
-                                                                      txt_file_list);
+                try:
+                    encountered_error_flag = create_generic_download_list(search_dtype,       # L2
+                                                                        search_filter,      # "V2015001235*SST.nc" (must be inside double quotes)
+                                                                        search_sensor,      # viirs (This script support viirs sensor only)
+                                                                        search_std_only,    # Boolean, avoid non standard files
+                                                                        search_as_file,     # Boolean, get the result as a file.
+                                                                        search_addurl,      # Boolean, 1 will prepend "http://oceandata.sci.gsfc.nasa.gov/cgi/getfile/" to the file name.
+                                                                        checksum_flag,      # Boolean, 1 will result in the checksum of the file prepended to filename and a space.  This script will do some post processing to produce the correct output.
+                                                                        search_sdate,       # "2015-01-01" (must be inside double quotes)
+                                                                        search_edate,       # "2015-01-01" (must be inside double quotes)
+                                                                        search_groupby,     # {hourly,daily,weekly,monthly,yearly}
+                                                                        search_current_only_value,    
+                                                                        state_filename,     # Name of state file to use.  Default to empty string unless override with -i <state_filename>
+                                                                        search_psdate,      # "2015-01-01" (must be inside double quotes: file processing start date for search)
+                                                                        search_pedate,      # "2015-01-01" (must be inside double quotes: file processing end date for search)
+                                                                        search_days_back,   # How many days back to search for file processing date start.  Default is 1 to get files added the last 24 hours roughly.
+                                                                        pattern_to_look_for,
+                                                                        txt_file_list);
+                except Exception as e:
+                    print("ERROR encountered...")
+                    write_out_error_file(str(e))
+                    print("Exiting with exit code 1.")
+                    sys.exit(1)
             # end else portion of if (os.getenv("CRAWLER_SEARCH_SKIP_ACTUAL_DOWNLOAD","") == "true")
             processing_loop += 1;
         # end while ((not encountered_error_flag) and (processing_loop < max_loop))
@@ -497,29 +503,38 @@ def main(argv):
 
     # end while not encountered_error_flag
     else:
-        encountered_error_flag = create_generic_download_list(search_dtype,       # L2
-                                                              search_filter,      # "V2015001235*SST.nc" (must be inside double quotes)
-                                                              search_sensor,      # viirs (This script support viirs sensor only)
-                                                              search_std_only,    # Boolean, avoid non standard files
-                                                              search_as_file,     # Boolean, get the result as a file.
-                                                              search_addurl,      # Boolean, 1 will prepend "http://oceandata.sci.gsfc.nasa.gov/cgi/getfile/" to the file name.
-                                                              checksum_flag,      # Boolean, 1 will result in the checksum of the file prepended to filename and a space.  This script will do some post processing to produce the correct output.
-                                                              search_sdate,       # "2015-01-01" (must be inside double quotes)
-                                                              search_edate,       # "2015-01-01" (must be inside double quotes)
-                                                              search_groupby,     # {hourly,daily,weekly,monthly,yearly}
-                                                              search_current_only_value,    
-                                                              state_filename,     # Name of state file to use.  Default to empty string unless override with -i <state_filename>
-                                                              search_psdate,      # "2015-01-01" (must be inside double quotes: file processing start date for search)
-                                                              search_pedate,      # "2015-01-01" (must be inside double quotes: file processing end date for search)
-                                                              search_days_back,   # How many days back to search for file processing date start.  Default is 1 to get files added the last 24 hours roughly.
-                                                              pattern_to_look_for,
-                                                              txt_file_list);
+        try:
+            encountered_error_flag = create_generic_download_list(search_dtype,       # L2
+                                                                search_filter,      # "V2015001235*SST.nc" (must be inside double quotes)
+                                                                search_sensor,      # viirs (This script support viirs sensor only)
+                                                                search_std_only,    # Boolean, avoid non standard files
+                                                                search_as_file,     # Boolean, get the result as a file.
+                                                                search_addurl,      # Boolean, 1 will prepend "http://oceandata.sci.gsfc.nasa.gov/cgi/getfile/" to the file name.
+                                                                checksum_flag,      # Boolean, 1 will result in the checksum of the file prepended to filename and a space.  This script will do some post processing to produce the correct output.
+                                                                search_sdate,       # "2015-01-01" (must be inside double quotes)
+                                                                search_edate,       # "2015-01-01" (must be inside double quotes)
+                                                                search_groupby,     # {hourly,daily,weekly,monthly,yearly}
+                                                                search_current_only_value,    
+                                                                state_filename,     # Name of state file to use.  Default to empty string unless override with -i <state_filename>
+                                                                search_psdate,      # "2015-01-01" (must be inside double quotes: file processing start date for search)
+                                                                search_pedate,      # "2015-01-01" (must be inside double quotes: file processing end date for search)
+                                                                search_days_back,   # How many days back to search for file processing date start.  Default is 1 to get files added the last 24 hours roughly.
+                                                                pattern_to_look_for,
+                                                                txt_file_list);
+        except Exception as e:
+            print("ERROR encountered...")
+            write_out_error_file(str(e))
+            print("Exiting with exit code 1.")
+            sys.exit(1)
 
     # Depend on if we had encountered an error or not, we exit with the appropriate code so an external program can decide what to do.
     if (encountered_error_flag):
-        sys.exit(0);
+        print("ERROR encountered...")
+        write_out_error_file("Error encountered in create_generic_download_list function.")
+        print("Exiting with exit code 1.")
+        sys.exit(1)
     else:
-        sys.exit(1);
+        sys.exit(0)       
 
 
 def create_generic_download_list(search_dtype,       # L2
@@ -650,7 +665,8 @@ def create_generic_download_list(search_dtype,       # L2
                     if (g_num_file_states_loaded != len(g_state_dictionary)):
                         print("ERROR:default_state_filename",default_state_filename,"g_num_file_states_loaded",g_num_file_states_loaded,"len(g_state_dictionary)",len(g_state_dictionary),"two_values_differ");
                         input_file_fp.close();
-                        sys.exit(0);
+                        write_out_error_file(f"default_state_filename {default_state_filename} g_num_file_states_loaded {g_num_file_states_loaded} {len(g_state_dictionary)} {len(g_state_dictionary)} two_values_differ")
+                        sys.exit(1);
                      
                     if (g_trace_flag):
                         print("line",line.rstrip());
@@ -1241,7 +1257,8 @@ def create_generic_download_list(search_dtype,       # L2
               except:
                 print(g_module_name + "ERROR:len(g_state_for_saving_dictionary)",len(g_state_for_saving_dictionary));
                 print(g_module_name + "ERROR:Had issues writing content of g_state_for_saving_dictionary to state file " + default_state_filename);
-                sys.exit(0);
+                write_out_error_file(f"{g_module_name}, Had issues writing content of g_state_for_saving_dictionary to state file {default_state_filename}")
+                sys.exit(1);
 
 
             if (g_debug_flag):
@@ -1528,6 +1545,17 @@ def validate_search_filter(i_search_filter):
         print("ERROR: The i_search_filter should at least contain the year");
         sys.exit(0);
 #        raise ValueError("Incorrect data format for search_filter field, should be YYYY: " + search_filter);
+
+def write_out_error_file(error):
+    """Write out text file if errors are encountered.
+    
+    This will alert the calling script that an error has occured so that it may
+    set the program exit code appropriately.
+    """
+    
+    error_file = "/tmp/error.txt"
+    with open(error_file, 'a') as fh:
+        fh.write(f"{error}\n")
 
 if __name__ == "__main__":
    main(sys.argv[1:])

@@ -6,10 +6,6 @@ Pusblishes error message to SNS Topic.
 """
 
 # Standard imports
-import argparse
-import datetime
-import time
-import logging
 import os
 import sys
 

@@ -21,6 +21,7 @@ import os
 import pathlib
 import random
 import subprocess
+from subprocess import PIPE
 import sys
 
 # Third-party imports
@@ -81,11 +82,16 @@ def event_handler(event, context):
         
     # Execute shell script
     lambda_task_root = os.getenv('LAMBDA_TASK_ROOT')
-    subprocess.run([f"{lambda_task_root}/shell/startup_generic_download_list_creator.csh", \
-        search_pattern, output_directory, processing_type, processing_level, \
-        state_file_name, num_days_back, txt_file_list, year, \
-        granule_start_date, granule_end_date, naming_pattern_indicator], \
-        cwd=f"{lambda_task_root}/shell")
+    try:
+        subprocess.run([f"{lambda_task_root}/shell/startup_generic_download_list_creator.csh", \
+            search_pattern, output_directory, processing_type, processing_level, \
+            state_file_name, num_days_back, txt_file_list, year, \
+            granule_start_date, granule_end_date, naming_pattern_indicator], \
+            cwd=f"{lambda_task_root}/shell", check=True, stderr=PIPE)
+    except subprocess.CalledProcessError as e:
+        sigevent_description = e.stderr.decode("utf-8").strip()
+        sigevent_data = f"Subprocess Run command: {e.cmd}"
+        handle_error(sigevent_description, sigevent_data, logger)
     
     # Get list of text file name(s)
     if txt_file_list.exists():

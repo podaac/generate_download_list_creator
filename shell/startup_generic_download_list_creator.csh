@@ -350,11 +350,20 @@ else
         setenv TZ PST8PDT
         echo 'create_generic_download_list:END_PROCESSING_TIME ' `date`
     else
+        # echo "$python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t $actual_filter -d 0 -f 1 -a 1 -c 1 -g daily -b crawl_current -i $state_file_name -z $num_days_back -x $txt_file_list | tee $downloader_log_name"    # NET edit.
         $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level" -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -b "crawl_current" -i "$state_file_name" -z "$num_days_back" -x "$txt_file_list" | tee $downloader_log_name    # NET edit.
-        echo "$python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g daily -b crawl_current -i $state_file_name -z $num_days_back -x $txt_file_list | tee $downloader_log_name"    # NET edit.
         setenv TZ PST8PDT
         echo 'create_generic_download_list:END_PROCESSING_TIME ' `date` | tee $downloader_log_name
     endif
 endif
 setenv TZ GMT
-exit(1)
+
+# Get contents of error file indicator see if any errors were encountered in python script
+set error_file="/tmp/error.txt"
+if ( -f "$error_file" ) then
+    set error_msg=`cat $error_file`
+    /bin/sh -c "echo $error_msg 1>&2"
+    rm -rf $error_file    # Remove error file indicator
+    echo "startup_generic_downloader_job_index.csh exiting with status of 1"
+    exit(1)
+endif
