@@ -74,12 +74,22 @@ resource "aws_iam_policy" "aws_lambda_dlc_execution_policy" {
         "Resource" : "${data.aws_kms_key.aws_s3.arn}"
       },
       {
-        "Sid" : "AllowSendMessage",
+        "Sid" : "AllowSendMessageDLC",
         "Effect" : "Allow",
         "Action" : [
           "sqs:SendMessage"
         ],
         "Resource" : "${aws_sqs_queue.aws_sqs_queue_dlc.arn}"
+      },
+      {
+        "Sid" : "AllowSQSAccessPJ",
+        "Effect" : "Allow",
+        "Action" : [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes"
+        ],
+        "Resource" : "${aws_sqs_queue.aws_sqs_queue_pending_jobs.arn}"
       },
       {
         "Effect" : "Allow",
