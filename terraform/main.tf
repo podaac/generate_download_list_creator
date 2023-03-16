@@ -25,6 +25,10 @@ provider "aws" {
 # Data sources
 data "aws_caller_identity" "current" {}
 
+data "aws_ecr_repository" "download_list_creator" {
+  name = "${var.prefix}-download-list-creator"
+}
+
 data "aws_kms_key" "aws_s3" {
   key_id = "alias/aws/s3"
 }

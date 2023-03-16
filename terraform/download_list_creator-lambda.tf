@@ -1,6 +1,6 @@
 # AWS Lambda function
 resource "aws_lambda_function" "aws_lambda_download_list_creator" {
-  image_uri     = "${local.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/${var.prefix}-download-list-creator:latest"
+  image_uri     = "${data.aws_ecr_repository.download_list_creator.repository_url}:latest"
   function_name = "${var.prefix}-download-list-creator"
   role          = aws_iam_role.aws_lambda_dlc_execution_role.arn
   package_type  = "Image"
