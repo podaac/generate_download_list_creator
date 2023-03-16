@@ -33,6 +33,14 @@ data "aws_sns_topic" "batch_failure_topic" {
   name = "${var.prefix}-batch-job-failure"
 }
 
+data "aws_sqs_queue" "download_lists" {
+  name = "${var.prefix}-download-lists"
+}
+
+data "aws_sqs_queue" "pending_jobs" {
+  name = "${var.prefix}-pending-jobs"
+}
+
 # Local variables
 locals {
   account_id = data.aws_caller_identity.current.account_id
