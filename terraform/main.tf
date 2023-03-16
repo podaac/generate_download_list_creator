@@ -29,6 +29,10 @@ data "aws_kms_key" "aws_s3" {
   key_id = "alias/aws/s3"
 }
 
+data "aws_s3_bucket" "s3_download_lists" {
+  bucket = "${var.prefix}-download-lists"
+}
+
 data "aws_sns_topic" "batch_failure_topic" {
   name = "${var.prefix}-batch-job-failure"
 }

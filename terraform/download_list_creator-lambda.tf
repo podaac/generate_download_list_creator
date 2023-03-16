@@ -53,7 +53,7 @@ resource "aws_iam_policy" "aws_lambda_dlc_execution_policy" {
         "Action" : [
           "s3:ListBucket"
         ],
-        "Resource" : "${aws_s3_bucket.aws_s3_bucket_dlc.arn}"
+        "Resource" : "${data.aws_s3_bucket.s3_download_lists.arn}"
       },
       {
         "Sid" : "AllowGetPutObject",
@@ -62,7 +62,7 @@ resource "aws_iam_policy" "aws_lambda_dlc_execution_policy" {
           "s3:GetObject",
           "s3:PutObject"
         ],
-        "Resource" : "${aws_s3_bucket.aws_s3_bucket_dlc.arn}/*"
+        "Resource" : "${data.aws_s3_bucket.s3_download_lists.arn}/*"
       },
       {
         "Sid" : "AllowKMSKeyAccess",
@@ -107,38 +107,6 @@ resource "aws_iam_policy" "aws_lambda_dlc_execution_policy" {
       }
     ]
   })
-}
-
-# S3 bucket to hold text files
-resource "aws_s3_bucket" "aws_s3_bucket_dlc" {
-  bucket = "${var.prefix}-download-lists"
-  tags   = { Name = "${var.prefix}-download-lists" }
-}
-
-resource "aws_s3_bucket_public_access_block" "aws_s3_bucket_dlc_public_block" {
-  bucket                  = aws_s3_bucket.aws_s3_bucket_dlc.id
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-resource "aws_s3_bucket_ownership_controls" "aws_s3_bucket_dlc_ownership" {
-  bucket = aws_s3_bucket.aws_s3_bucket_dlc.id
-  rule {
-    object_ownership = "BucketOwnerEnforced"
-  }
-}
-
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "aws_s3_bucket_dlc_encryption" {
-  bucket = aws_s3_bucket.aws_s3_bucket_dlc.bucket
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm     = "aws:kms"
-      kms_master_key_id = "aws/s3"
-    }
-  }
 }
 
 # EventBridge schedules
