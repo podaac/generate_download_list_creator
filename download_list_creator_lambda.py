@@ -123,6 +123,7 @@ def event_handler(event, context):
         sqs_queue_dl = f"https://sqs.{event['region']}.amazonaws.com/{event['account']}/{event['prefix']}-download-lists"
         txt_files = [f"{txt_file.name}_{UNIQUE_ID}" for txt_file in txt_list]
         txt_files.extend(pending_txts)
+        txt_files = [*set(txt_files)]   # Remove any duplicates
         send_text_file_list(sqs, txt_files, sqs_queue_dl, event['prefix'], DS_KEY[processing_type], logger)
         
     else:
