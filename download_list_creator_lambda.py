@@ -185,7 +185,8 @@ def check_queue(sqs, sqs_queue, dataset, logger):
             QueueUrl=sqs_queue,
             AttributeNames=["All"],
             MessageAttributeNames=["dataset"],
-            MaxNumberOfMessages=10
+            MaxNumberOfMessages=10,
+            WaitTimeSeconds=20    # Long polling
         )
         
         # Create list of messages for dataset
@@ -198,7 +199,9 @@ def check_queue(sqs, sqs_queue, dataset, logger):
                     QueueUrl=sqs_queue,
                     ReceiptHandle=message["ReceiptHandle"]
                 )
-                logger.info(f"Found pending job(s): {message['Body']}")           
+                logger.info(f"Found pending job(s): {message['Body']}")
+            else:
+                logger.info(f"Located irrelavant job(s): {message['Body']}")     
                     
     except botocore.exceptions.ClientError as e:
         sigevent_description = "Problem checking queue for pending jobs."
