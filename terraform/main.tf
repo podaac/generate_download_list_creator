@@ -45,8 +45,16 @@ data "aws_sqs_queue" "download_lists" {
   name = "${var.prefix}-download-lists"
 }
 
-data "aws_sqs_queue" "pending_jobs" {
-  name = "${var.prefix}-pending-jobs"
+data "aws_sqs_queue" "pending_jobs_aqua" {
+  name = "${var.prefix}-pending-jobs-aqua.fifo"
+}
+
+data "aws_sqs_queue" "pending_jobs_terra" {
+  name = "${var.prefix}-pending-jobs-terra.fifo"
+}
+
+data "aws_sqs_queue" "pending_jobs_viirs" {
+  name = "${var.prefix}-pending-jobs-viirs.fifo"
 }
 
 # Local variables

@@ -100,12 +100,12 @@ def event_handler(event, context):
         txt_list = [output_directory.joinpath(txt) for txt in txt_list]
     else:
         txt_list = []
-    logger.info(txt_list)
+    logger.info(f"List of txt files to process: {txt_list}")
     
     # Check pending jobs queue
     sqs = boto3.client("sqs")
-    sqs_queue_pj = f"https://sqs.{event['region']}.amazonaws.com/{event['account']}/{event['prefix']}-pending-jobs"
-    pending_txts = check_queue(sqs, sqs_queue_pj, DS_KEY[processing_type], logger)
+    sqs_queue_pj = f"https://sqs.{event['region']}.amazonaws.com/{event['account']}/{event['prefix']}-pending-jobs-{DS_KEY[processing_type]}.fifo"
+    pending_txts = check_queue(sqs, sqs_queue_pj, logger)
     
     if len(txt_list) != 0 or len(pending_txts) != 0:
         
@@ -174,7 +174,7 @@ def get_s3_state_file(s3_client, bucket, state_file_name, logger):
             sigevent_description = f"Problem retrieving state file {state_file_name.name}."
             handle_error(sigevent_description, e, logger)
             
-def check_queue(sqs, sqs_queue, dataset, logger):
+def check_queue(sqs, sqs_queue, logger):
     """Check queue to see if there are any downloads from previous executions.
     
     Returns list of text files that contain downloads.
@@ -184,25 +184,21 @@ def check_queue(sqs, sqs_queue, dataset, logger):
     try:
         messages = sqs.receive_message(
             QueueUrl=sqs_queue,
-            AttributeNames=["All"],
-            MessageAttributeNames=["dataset"],
             MaxNumberOfMessages=10,
-            WaitTimeSeconds=20    # Long polling
+            WaitTimeSeconds=20,    # Long polling
+            VisibilityTimeout=20
         )
         
         # Create list of messages for dataset
         dlc_list = []
         for message in messages["Messages"]:
-            if message["MessageAttributes"]["dataset"]["StringValue"] == dataset:
-                dlc_list.extend(json.loads(message["Body"]))
-                # Delete message
-                response = sqs.delete_message(
-                    QueueUrl=sqs_queue,
-                    ReceiptHandle=message["ReceiptHandle"]
-                )
-                logger.info(f"Found pending job(s): {message['Body']}")
-            else:
-                logger.info(f"Located irrelavant job(s): {message['Body']}")     
+            dlc_list.extend(json.loads(message["Body"]))
+            # Delete message
+            response = sqs.delete_message(
+                QueueUrl=sqs_queue,
+                ReceiptHandle=message["ReceiptHandle"]
+            )
+            logger.info(f"Found pending job(s): {message['Body']}")    
                     
     except botocore.exceptions.ClientError as e:
         sigevent_description = "Problem checking queue for pending jobs."
