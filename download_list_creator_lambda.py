@@ -76,7 +76,7 @@ def event_handler(event, context):
         
     # Check if state file exists and pull from S3 to /tmp if it does
     s3_client = boto3.client("s3")
-    bucket = f"{event['prefix']}-download-lists"
+    bucket = f"{event['prefix']}"
     logger = get_logger()
     get_s3_state_file(s3_client, bucket, state_file_name, logger)
         
@@ -165,13 +165,13 @@ def get_s3_state_file(s3_client, bucket, state_file_name, logger):
     """Retrieve state file from S3 bucket if it exists."""
     
     try:
-        response = s3_client.download_file(bucket, f"state_files/{state_file_name.name}", str(state_file_name))
-        logger.info(f"State file copied: {state_file_name}")
+        response = s3_client.download_file(bucket, f"download-lists/state_files/{state_file_name.name}", str(state_file_name))
+        logger.info(f"State file copied from s3://{bucket}/download-lists/state_files/: {state_file_name}")
     except botocore.exceptions.ClientError as e:
         if e.response["Error"]["Code"] == "404":
-            logger.info(f"State file does not exist: s3://{bucket}/state_files/{state_file_name.name}")
+            logger.info(f"State file does not exist: s3://{bucket}/download-lists/state_files/{state_file_name.name}")
         else:
-            sigevent_description = f"Problem retrieving state file s3://{bucket}/state_files/{state_file_name.name}."
+            sigevent_description = f"Problem retrieving state file s3://{bucket}/download-lists/state_files/{state_file_name.name}."
             handle_error(sigevent_description, e, logger)
             
 def check_queue(sqs, sqs_queue, logger):
@@ -221,11 +221,11 @@ def upload_text_files(s3_client, txt_files, bucket, key, logger):
     
     try:
         for txt_file in txt_files:
-            response = s3_client.upload_file(str(txt_file), bucket, f"{key}/{txt_file.name}_{UNIQUE_ID}", ExtraArgs={"ServerSideEncryption": "aws:kms"})
-            logger.info(f"File uploaded: s3://{bucket}/{key}/{txt_file.name}_{UNIQUE_ID}")
+            response = s3_client.upload_file(str(txt_file), bucket, f"download-lists/{key}/{txt_file.name}_{UNIQUE_ID}", ExtraArgs={"ServerSideEncryption": "aws:kms"})
+            logger.info(f"File uploaded: s3://{bucket}/download-lists/{key}/{txt_file.name}_{UNIQUE_ID}")
     except botocore.exceptions.ClientError as e:
         txt_list = [ txt_file.name for txt_file in txt_files ]
-        sigevent_description = f"Problem uploading text files to s3://{bucket}/{key}/{txt_file.name}_{UNIQUE_ID}: {', '.join(txt_list)}."
+        sigevent_description = f"Problem uploading text files to s3://{bucket}/download-lists/{key}/{txt_file.name}_{UNIQUE_ID}: {', '.join(txt_list)}."
         handle_error(sigevent_description, e, logger)
 
 def send_text_file_list(sqs, txt_files, sqs_queue, prefix, dataset, logger):
@@ -250,10 +250,10 @@ def upload_state_file(s3_client, state_file, bucket, logger):
     """Upload state file to S3 bucket."""
     
     try:
-        response = s3_client.upload_file(str(state_file), bucket, f"state_files/{state_file.name}", ExtraArgs={"ServerSideEncryption": "aws:kms"})
-        logger.info(f"File uploaded: s3://{bucket}/state_files/{state_file.name}")
+        response = s3_client.upload_file(str(state_file), bucket, f"download-lists/state_files/{state_file.name}", ExtraArgs={"ServerSideEncryption": "aws:kms"})
+        logger.info(f"File uploaded: s3://{bucket}/download-lists/state_files/{state_file.name}")
     except botocore.exceptions.ClientError as e:       
-        sigevent_description = f"Problem uploading state file: {state_file.name}."
+        sigevent_description = f"Problem uploading state file: {state_file.name} to s3://{bucket}/download-lists/state_files/."
         handle_error(sigevent_description, e, logger)
         
 def delete_files(txt_list, state_file_name, txt_file_list, logger):

@@ -33,7 +33,7 @@ data "aws_kms_key" "aws_s3" {
 }
 
 data "aws_s3_bucket" "s3_download_lists" {
-  bucket = "${var.prefix}-download-lists"
+  bucket = "${var.prefix}"
 }
 
 data "aws_sns_topic" "batch_failure_topic" {
