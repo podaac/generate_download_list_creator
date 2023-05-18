@@ -116,7 +116,7 @@ resource "aws_iam_policy" "aws_lambda_dlc_execution_policy" {
 # EventBridge schedules
 # MODIS Aqua
 resource "aws_scheduler_schedule" "aws_schedule_dlc_aqua" {
-  name       = "${var.prefix}-dlc-modis-aqua"
+  name       = "${var.prefix}-dlc-aqua"
   group_name = "default"
   flexible_time_window {
     mode = "OFF"
@@ -142,7 +142,7 @@ resource "aws_scheduler_schedule" "aws_schedule_dlc_aqua" {
 
 # MODIS Terra
 resource "aws_scheduler_schedule" "aws_schedule_dlc_terra" {
-  name       = "${var.prefix}-dlc-modis-terra"
+  name       = "${var.prefix}-dlc-terra"
   group_name = "default"
   flexible_time_window {
     mode = "OFF"
@@ -168,7 +168,7 @@ resource "aws_scheduler_schedule" "aws_schedule_dlc_terra" {
 
 # VIIRS
 resource "aws_scheduler_schedule" "aws_schedule_dlc_viirs" {
-  name       = "${var.prefix}-dlc-modis-viirs"
+  name       = "${var.prefix}-dlc-viirs"
   group_name = "default"
   flexible_time_window {
     mode = "OFF"
