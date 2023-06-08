@@ -66,7 +66,7 @@ def event_handler(event, context):
     else:
         year = "-1"
         naming_pattern_indicator = ""
-    txt_file_list = pathlib.Path("/tmp/txt_file_list.txt")
+    txt_file_list = pathlib.Path(f"/tmp/txt_file_list_{processing_type}.txt")
     
     # Create required directories
     if not output_directory.is_dir():
