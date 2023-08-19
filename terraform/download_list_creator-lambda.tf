@@ -6,6 +6,10 @@ resource "aws_lambda_function" "aws_lambda_download_list_creator" {
   package_type  = "Image"
   memory_size   = 256
   timeout       = 900
+  vpc_config {
+    subnet_ids         = data.aws_subnets.private_application_subnets.ids
+    security_group_ids = data.aws_security_groups.vpc_default_sg.ids
+  }
 }
 
 # AWS Lambda execution role & policy
@@ -46,6 +50,30 @@ resource "aws_iam_policy" "aws_lambda_dlc_execution_policy" {
           "logs:PutLogEvents"
         ],
         "Resource" : "arn:aws:logs:*:*:*"
+      },
+      {
+        "Sid" : "AllowVPCAccess",
+        "Effect" : "Allow",
+        "Action" : [
+          "ec2:CreateNetworkInterface"
+        ],
+        "Resource" : concat([for subnet in data.aws_subnet.private_application_subnet : subnet.arn], ["arn:aws:ec2:${var.aws_region}:${local.account_id}:*/*"])
+      },
+      {
+        "Sid" : "AllowVPCDelete",
+        "Effect" : "Allow",
+        "Action" : [
+          "ec2:DeleteNetworkInterface"
+        ],
+        "Resource" : "arn:aws:ec2:${var.aws_region}:${local.account_id}:*/*"
+      },
+      {
+        "Sid" : "AllowVPCDescribe",
+        "Effect" : "Allow",
+        "Action" : [
+          "ec2:DescribeNetworkInterfaces",
+        ],
+        "Resource" : "*"
       },
       {
         "Sid" : "AllowListBucket",
@@ -116,7 +144,7 @@ resource "aws_iam_policy" "aws_lambda_dlc_execution_policy" {
 # EventBridge schedules
 # MODIS Aqua
 resource "aws_scheduler_schedule" "aws_schedule_dlc_aqua" {
-  name       = "${var.prefix}-dlc-modis-aqua"
+  name       = "${var.prefix}-dlc-aqua"
   group_name = "default"
   flexible_time_window {
     mode = "OFF"
@@ -126,23 +154,23 @@ resource "aws_scheduler_schedule" "aws_schedule_dlc_aqua" {
     arn      = aws_lambda_function.aws_lambda_download_list_creator.arn
     role_arn = aws_iam_role.aws_eventbridge_dlc_execution_role.arn
     input = jsonencode({
-    "search_pattern" : "${var.aqua_search_pattern}",
-    "processing_type" : "${var.aqua_processing_type}",
-    "processing_level" : "${var.processing_level}",
-    "num_days_back" : "${var.num_days_back}",
-    "granule_start_date" : "${var.granule_start_date}",
-    "granule_end_date" : "${var.granule_end_date}",
-    "naming_pattern_indicator" : "${var.naming_pattern_indicator}",
-    "account" : "${local.account_id}",
-    "region" : "${var.aws_region}",
-    "prefix": "${var.prefix}"
-  })
+      "search_pattern" : "${var.aqua_search_pattern}",
+      "processing_type" : "${var.aqua_processing_type}",
+      "processing_level" : "${var.processing_level}",
+      "num_days_back" : "${var.num_days_back}",
+      "granule_start_date" : "${var.granule_start_date}",
+      "granule_end_date" : "${var.granule_end_date}",
+      "naming_pattern_indicator" : "${var.naming_pattern_indicator}",
+      "account" : "${local.account_id}",
+      "region" : "${var.aws_region}",
+      "prefix" : "${var.prefix}"
+    })
   }
 }
 
 # MODIS Terra
 resource "aws_scheduler_schedule" "aws_schedule_dlc_terra" {
-  name       = "${var.prefix}-dlc-modis-terra"
+  name       = "${var.prefix}-dlc-terra"
   group_name = "default"
   flexible_time_window {
     mode = "OFF"
@@ -152,23 +180,23 @@ resource "aws_scheduler_schedule" "aws_schedule_dlc_terra" {
     arn      = aws_lambda_function.aws_lambda_download_list_creator.arn
     role_arn = aws_iam_role.aws_eventbridge_dlc_execution_role.arn
     input = jsonencode({
-    "search_pattern" : "${var.terra_search_pattern}",
-    "processing_type" : "${var.terra_processing_type}",
-    "processing_level" : "${var.processing_level}",
-    "num_days_back" : "${var.num_days_back}",
-    "granule_start_date" : "${var.granule_start_date}",
-    "granule_end_date" : "${var.granule_end_date}",
-    "naming_pattern_indicator" : "${var.naming_pattern_indicator}",
-    "account" : "${local.account_id}",
-    "region" : "${var.aws_region}",
-    "prefix": "${var.prefix}"
-  })
+      "search_pattern" : "${var.terra_search_pattern}",
+      "processing_type" : "${var.terra_processing_type}",
+      "processing_level" : "${var.processing_level}",
+      "num_days_back" : "${var.num_days_back}",
+      "granule_start_date" : "${var.granule_start_date}",
+      "granule_end_date" : "${var.granule_end_date}",
+      "naming_pattern_indicator" : "${var.naming_pattern_indicator}",
+      "account" : "${local.account_id}",
+      "region" : "${var.aws_region}",
+      "prefix" : "${var.prefix}"
+    })
   }
 }
 
 # VIIRS
 resource "aws_scheduler_schedule" "aws_schedule_dlc_viirs" {
-  name       = "${var.prefix}-dlc-modis-viirs"
+  name       = "${var.prefix}-dlc-viirs"
   group_name = "default"
   flexible_time_window {
     mode = "OFF"
@@ -178,17 +206,17 @@ resource "aws_scheduler_schedule" "aws_schedule_dlc_viirs" {
     arn      = aws_lambda_function.aws_lambda_download_list_creator.arn
     role_arn = aws_iam_role.aws_eventbridge_dlc_execution_role.arn
     input = jsonencode({
-    "search_pattern" : "${var.viirs_search_pattern}",
-    "processing_type" : "${var.viirs_processing_type}",
-    "processing_level" : "${var.processing_level}",
-    "num_days_back" : "${var.num_days_back}",
-    "granule_start_date" : "${var.granule_start_date}",
-    "granule_end_date" : "${var.granule_end_date}",
-    "naming_pattern_indicator" : "${var.naming_pattern_indicator}",
-    "account" : "${local.account_id}",
-    "region" : "${var.aws_region}",
-    "prefix": "${var.prefix}"
-  })
+      "search_pattern" : "${var.viirs_search_pattern}",
+      "processing_type" : "${var.viirs_processing_type}",
+      "processing_level" : "${var.processing_level}",
+      "num_days_back" : "${var.num_days_back}",
+      "granule_start_date" : "${var.granule_start_date}",
+      "granule_end_date" : "${var.granule_end_date}",
+      "naming_pattern_indicator" : "${var.naming_pattern_indicator}",
+      "account" : "${local.account_id}",
+      "region" : "${var.aws_region}",
+      "prefix" : "${var.prefix}"
+    })
   }
 }
 
