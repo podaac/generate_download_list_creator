@@ -78,6 +78,7 @@ def event_handler(event, context):
     s3_client = boto3.client("s3")
     bucket = f"{event['prefix']}"
     logger = get_logger()
+    logger.info(f"Unique identifier: {UNIQUE_ID}")
     get_s3_state_file(s3_client, bucket, state_file_name, logger)
         
     # Execute shell script

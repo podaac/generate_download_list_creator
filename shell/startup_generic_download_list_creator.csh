@@ -208,6 +208,16 @@ if ($debug_mode == 1) then
     echo "granule_end_date                        " $granule_end_date
 endif
 
+# Dataset info
+if ($processing_type == "MODIS_A") then
+    set dataset = "MODIS Aqua"
+else if ($processing_type == "MODIS_T") then
+    set dataset = "MODIS Terra"
+else
+    set dataset = $processing_type
+endif
+echo "startup_generic_download_list_creator.csh - INFO: Dataset:" $dataset
+
 # Create the $HOME/logs directory if it does not exist yet
 set logging_dir = `printenv | grep OBPG_DOWNLOAD_LIST_CREATOR_LOGGING | awk -F= '{print $2}'`
 echo "LOGGING: " "$logging_dir"

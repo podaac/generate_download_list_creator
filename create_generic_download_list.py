@@ -1201,6 +1201,7 @@ def create_generic_download_list(search_dtype,       # L2
                     if (file_state_status == "ready_for_saving"):  # Seen before with different checksum.
                         output_file_pointer.write(new_line + '\n');
                         found_names += 1; # Keep track of how many names we have written to this new file.
+                        print(f"{g_module_name} - INFO: Processed: {output_file_name} | {new_line}")
                         if (g_trace_flag):
                             print(g_module_name + "TRACE:file_state_status",file_state_status,"new_line",new_line)
                     else:
@@ -1254,6 +1255,7 @@ def create_generic_download_list(search_dtype,       # L2
                 print(g_module_name + "INFO:NUM_NAMES_FOUND_FROM_CRAWLING            ",g_num_names_found_from_crawling);
                 print(g_module_name + "INFO:NUM_EXISTING_NAMES_SAME_CHECKSUM_IN_STATE",g_num_existing_names_same_checksum_in_state);
                 print(g_module_name + "INFO:NUM_EXISTING_NAMES_DIFFERENT_CHECKSUM_IN_STATE",g_num_existing_names_different_checksum_in_state);
+                print(f"{g_module_name} - INFO: Number of downloads found: {all_names_found_in_execution}")
               except:
                 print(g_module_name + "ERROR:len(g_state_for_saving_dictionary)",len(g_state_for_saving_dictionary));
                 print(g_module_name + "ERROR:Had issues writing content of g_state_for_saving_dictionary to state file " + default_state_filename);
@@ -1279,6 +1281,7 @@ def create_generic_download_list(search_dtype,       # L2
         print(g_module_name + "INFO:NUM_NAMES_FOUND_FROM_CRAWLING            ",g_num_names_found_from_crawling);
         print(g_module_name + "INFO:NUM_EXISTING_NAMES_SAME_CHECKSUM_IN_STATE",g_num_existing_names_same_checksum_in_state);
         print(g_module_name + "INFO:No new files were found from the following query_string")
+        print(f"{g_module_name} - INFO: Number of downloads found: 0")
         print(query_string);
         print("curl_command command: curl \"" + query_string + "\"");
         # Add a few more debug prints so the user know why zero files are returned.
