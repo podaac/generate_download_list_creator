@@ -489,9 +489,8 @@ def main(argv):
                                                                         pattern_to_look_for,
                                                                         txt_file_list);
                 except Exception as e:
-                    print("ERROR encountered...")
                     write_out_error_file(str(e))
-                    print("Exiting with exit code 1.")
+                    print(f"{g_module_name} - INFO: Exiting with exit code 1.")
                     sys.exit(1)
             # end else portion of if (os.getenv("CRAWLER_SEARCH_SKIP_ACTUAL_DOWNLOAD","") == "true")
             processing_loop += 1;
@@ -522,16 +521,14 @@ def main(argv):
                                                                 pattern_to_look_for,
                                                                 txt_file_list);
         except Exception as e:
-            print("ERROR encountered...")
             write_out_error_file(str(e))
-            print("Exiting with exit code 1.")
+            print(f"{g_module_name} - INFO: Exiting with exit code 1.")
             sys.exit(1)
 
     # Depend on if we had encountered an error or not, we exit with the appropriate code so an external program can decide what to do.
     if (encountered_error_flag):
-        print("ERROR encountered...")
         write_out_error_file("Error encountered in create_generic_download_list function.")
-        print("Exiting with exit code 1.")
+        print(f"{g_module_name} - INFO: Exiting with exit code 1.")
         sys.exit(1)
     else:
         sys.exit(0)       
@@ -1558,7 +1555,8 @@ def write_out_error_file(error):
     
     error_file = "/tmp/error.txt"
     with open(error_file, 'a') as fh:
-        fh.write(f"{error}\n")
+        error_string = re.escape(error)
+        fh.write(f"{error_string}\n")
 
 if __name__ == "__main__":
    main(sys.argv[1:])

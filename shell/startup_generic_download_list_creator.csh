@@ -374,6 +374,6 @@ if ( -f "$error_file" ) then
     set error_msg=`cat $error_file`
     /bin/sh -c "echo $error_msg 1>&2"
     rm -rf $error_file    # Remove error file indicator
-    echo "startup_generic_downloader_job_index.csh exiting with status of 1"
+    echo "startup_generic_downloader_job_index.csh - INFO: exiting with status of 1"
     exit(1)
 endif

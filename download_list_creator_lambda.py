@@ -275,7 +275,7 @@ def handle_error(sigevent_description, sigevent_data, logger):
     
     sigevent_type = "ERROR"
     logger.error(sigevent_description)
-    logger.error(sigevent_data)
+    logger.info(sigevent_data)
     notify(logger, sigevent_type, sigevent_description, sigevent_data)
-    logger.error("Program exit.")
+    logger.info("Program exit.")
     sys.exit(1)
