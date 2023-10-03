@@ -78,6 +78,7 @@ def event_handler(event, context):
     s3_client = boto3.client("s3")
     bucket = f"{event['prefix']}"
     logger = get_logger()
+    logger.info(f"Unique identifier: {UNIQUE_ID}")
     get_s3_state_file(s3_client, bucket, state_file_name, logger)
         
     # Execute shell script
@@ -274,7 +275,7 @@ def handle_error(sigevent_description, sigevent_data, logger):
     
     sigevent_type = "ERROR"
     logger.error(sigevent_description)
-    logger.error(sigevent_data)
+    logger.info(sigevent_data)
     notify(logger, sigevent_type, sigevent_description, sigevent_data)
-    logger.error("Program exit.")
+    logger.info("Program exit.")
     sys.exit(1)
