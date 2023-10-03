@@ -1252,7 +1252,7 @@ def create_generic_download_list(search_dtype,       # L2
                 print(g_module_name + "INFO:NUM_NAMES_FOUND_FROM_CRAWLING            ",g_num_names_found_from_crawling);
                 print(g_module_name + "INFO:NUM_EXISTING_NAMES_SAME_CHECKSUM_IN_STATE",g_num_existing_names_same_checksum_in_state);
                 print(g_module_name + "INFO:NUM_EXISTING_NAMES_DIFFERENT_CHECKSUM_IN_STATE",g_num_existing_names_different_checksum_in_state);
-                print(f"{g_module_name} - INFO: Number of downloads found: {all_names_found_in_execution}")
+                print(f"{g_module_name} - INFO: Number of downloads: {all_names_found_in_execution}")
               except:
                 print(g_module_name + "ERROR:len(g_state_for_saving_dictionary)",len(g_state_for_saving_dictionary));
                 print(g_module_name + "ERROR:Had issues writing content of g_state_for_saving_dictionary to state file " + default_state_filename);
