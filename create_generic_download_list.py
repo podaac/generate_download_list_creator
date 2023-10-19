@@ -40,6 +40,7 @@
 import datetime
 import getopt
 import os
+import pathlib
 import re
 import requests
 import sys
@@ -1198,7 +1199,7 @@ def create_generic_download_list(search_dtype,       # L2
                     if (file_state_status == "ready_for_saving"):  # Seen before with different checksum.
                         output_file_pointer.write(new_line + '\n');
                         found_names += 1; # Keep track of how many names we have written to this new file.
-                        print(f"{g_module_name} - INFO: Processed: {output_file_name} | {new_line}")
+                        print(f"{g_module_name} - INFO: Processed: {pathlib.Path(output_file_name).name} | {new_line}")
                         if (g_trace_flag):
                             print(g_module_name + "TRACE:file_state_status",file_state_status,"new_line",new_line)
                     else:
