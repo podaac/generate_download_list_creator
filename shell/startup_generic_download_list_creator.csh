@@ -217,6 +217,7 @@ else
     set dataset = $processing_type
 endif
 echo "startup_generic_download_list_creator.csh - INFO: Dataset:" $dataset
+echo "dataset: $dataset" >> $FINAL_LOG_MESSAGE
 
 # Create the $HOME/logs directory if it does not exist yet
 set logging_dir = `printenv | grep OBPG_DOWNLOAD_LIST_CREATOR_LOGGING | awk -F= '{print $2}'`
