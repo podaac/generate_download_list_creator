@@ -844,6 +844,10 @@ def create_generic_download_list(search_dtype,       # L2
 
     else:
         # The content returned from the read() function is a large string with carriage return.
+        
+        # Search by creation date if OBPG_CREATION_DATE environment variable is set - this prevents the inclusion of files that have been modified
+        creation_date = int(os.getenv("CREATION_DATE_SEARCH"))
+        if creation_date: query_string += "&crdate=1"
 
         print(g_module_name + 'INFO:Executing query_string', query_string);
         #exit(0);

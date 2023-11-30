@@ -28,6 +28,12 @@ variable "aws_region" {
   default     = "us-west-2"
 }
 
+variable "creation_date" {
+  type        = string
+  description = "Indicate whether OBPG query should use creation date"
+  default     = "1"
+}
+
 variable "default_tags" {
   type    = map(string)
   default = {}

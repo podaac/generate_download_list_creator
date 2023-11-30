@@ -83,11 +83,12 @@ endif
 #  num_days_back    = $6  How many days ago of file processing time do you want?  If just starting out, run it with 3 or 4 manually and then reduced to 1 as part of the crontab when all files have been processed.
 #  txt_file_list    = $7  Name of text file that contains a list of text files generated from OBPG query
 #  year             = $8  The year to use in the search filter if granule start and end dates are set to 'dummy'
+#  creation_date    = $9  Whether to use the creation date in the query to remove files with only modification timestamp changes
 #
 # For fetching specific granule start and end dates, we have provided 2 optional parameters.  Which means the parameters state_file_name and num_days_back will not be used so any dummy parameters can be entered.
 #
-#  granule_start_date = $9
-#  granule_end_date   = $10
+#  granule_start_date = $10
+#  granule_end_date   = $11
 #
 # The format of the fields are 'yyyy-mm-dd' as in:
 #
@@ -106,24 +107,25 @@ if ($debug_mode == 1) then
     echo "arg_6 [$6]"
     echo "arg_7 [$7]"
     echo "arg_8 [$8]"
-    if ($num_args >= 10) then
-        echo "arg_8 [$9]"
-        echo "arg_9 [$10]"
+    echo "arg_9 [$9]"
+    if ($num_args >= 11) then
+        echo "arg_8 [$10]"
+        echo "arg_9 [$11]"
     endif
 endif
 
 # Fetch the optional granule start and end dates.
 set granule_start_date = ""
 set granule_end_date   = ""
-if ($num_args >= 10) then
-    set granule_start_date = $9
-    set granule_end_date   = $10
+if ($num_args >= 11) then
+    set granule_start_date = $10
+    set granule_end_date   = $11
 endif
 
 # Check for optional parameter to look for new names format.
-if ($num_args >= 10) then
-echo "11 [$11]"
-    if $11 == 'GHRSST_OBPG_USE_2019_NAMING_PATTERN_TRUE' then
+if ($num_args >= 11) then
+echo "12 [$12]"
+    if $12 == 'GHRSST_OBPG_USE_2019_NAMING_PATTERN_TRUE' then
        echo "11 is GHRSST_OBPG_USE_2019_NAMING_PATTERN_TRUE, setting GHRSST_OBPG_USE_2019_NAMING_PATTERN to true"
        setenv GHRSST_OBPG_USE_2019_NAMING_PATTERN true
 echo "GHRSST_OBPG_USE_2019_NAMING_PATTERN [$GHRSST_OBPG_USE_2019_NAMING_PATTERN]"
@@ -166,19 +168,20 @@ set state_file_name  = $5
 set num_days_back    = $6
 set txt_file_list    = $7
 set year             = $8
-set granule_start_date = $9
-set granule_end_date   = $10
+set creation_date    = $9
+set granule_start_date = $10
+set granule_end_date   = $11
 
 # Fetch the optional granule start and end dates.
 set granule_start_date = ""
 set granule_end_date   = ""
-if ($num_args >= 10) then
-    set granule_start_date = $9
-    set granule_end_date   = $10
+if ($num_args >= 11) then
+    set granule_start_date = $10
+    set granule_end_date   = $11
 endif
 
 # Check for optional parameter and set to blanks if the dates parameters are dummy.
-if ($num_args >= 11) then
+if ($num_args >= 12) then
     # Set granule_start_date and granule_end_date back to empty string.
     if $granule_start_date == 'dummy' then
         set granule_start_date = ""
@@ -203,6 +206,7 @@ if ($debug_mode == 1) then
     echo "search_pattern                          " "$search_pattern"
     echo "state_file_name                         " $state_file_name
     echo "year                                    " $year
+    echo "creation_date                           " $creation_date
     echo "txt_file_list                           " $txt_file_list  
     echo "granule_start_date                      " $granule_start_date
     echo "granule_end_date                        " $granule_end_date
@@ -313,6 +317,15 @@ if ($processing_type == "AQUARIUS") then
 endif
 
 echo "ACTUAL SEARCH FILTER:   $actual_filter"
+
+# Set environment variable to indicate search by creation date
+if ($creation_date) then
+    setenv CREATION_DATE_SEARCH 1
+else
+    setenv CREATION_DATE_SEARCH 0
+endif
+
+echo "startup_generic_downloader_job_index.csh - INFO: CREATION_DATE_SEARCH set to $CREATION_DATE_SEARCH"
 
 # Reset the time zone back to GMT so we can have the correct current date when the Python script runs.
 setenv TZ GMT
