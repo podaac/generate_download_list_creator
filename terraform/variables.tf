@@ -5,9 +5,9 @@ variable "app_name" {
 }
 
 variable "app_version" {
-  type        = number
+  type        = string
   description = "The application version number"
-  default     = 0.1
+  default     = "0.1.1"
 }
 
 variable "aqua_processing_type" {
@@ -26,6 +26,12 @@ variable "aws_region" {
   type        = string
   description = "AWS region to deploy to"
   default     = "us-west-2"
+}
+
+variable "creation_date" {
+  type        = string
+  description = "Indicate whether OBPG query should use creation date"
+  default     = "1"
 }
 
 variable "default_tags" {

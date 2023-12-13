@@ -30,6 +30,7 @@ import botocore
 
 # Local imports
 from notify import notify
+from write_final_log import write_final_log
 
 # Constants
 LOG_PREFIX = {
@@ -61,6 +62,7 @@ def event_handler(event, context):
     granule_start_date = event["granule_start_date"]
     granule_end_date = event["granule_end_date"]
     naming_pattern_indicator = event["naming_pattern_indicator"] if "naming_pattern_indicator" in event.keys() else ""
+    creation_date = event["creation_date"]
     if granule_start_date == "dummy" and granule_end_date == "dummy": 
         year = f"{datetime.datetime.now().year}"
     else:
@@ -68,16 +70,23 @@ def event_handler(event, context):
         naming_pattern_indicator = ""
     txt_file_list = pathlib.Path(f"/tmp/txt_file_list_{processing_type}.txt")
     
+    # Set final log file environment variable
+    os.environ["FINAL_LOG_MESSAGE"] = f"/tmp/final_log_message_{UNIQUE_ID}.txt"
+    
     # Create required directories
     if not output_directory.is_dir():
         output_directory.mkdir(parents=True, exist_ok=True)
     if not state_file_name.parent.is_dir():
         state_file_name.parent.mkdir(parents=True, exist_ok=True)
         
+    # Get logger
+    logger = get_logger()
+    logger.info(f"Unique identifier: {UNIQUE_ID}")
+    write_final_log(f"unique_id: {UNIQUE_ID}")
+    
     # Check if state file exists and pull from S3 to /tmp if it does
     s3_client = boto3.client("s3")
     bucket = f"{event['prefix']}"
-    logger = get_logger()
     get_s3_state_file(s3_client, bucket, state_file_name, logger)
         
     # Execute shell script
@@ -85,7 +94,7 @@ def event_handler(event, context):
     try:
         subprocess.run([f"{lambda_task_root}/shell/startup_generic_download_list_creator.csh", \
             search_pattern, output_directory, processing_type, processing_level, \
-            state_file_name, num_days_back, txt_file_list, year, \
+            state_file_name, num_days_back, txt_file_list, year, creation_date, \
             granule_start_date, granule_end_date, naming_pattern_indicator], \
             cwd=f"{lambda_task_root}/shell", check=True, stderr=PIPE)
     except subprocess.CalledProcessError as e:
@@ -128,6 +137,9 @@ def event_handler(event, context):
         
     else:
         logger.info("No new downloads were found.")
+    
+    # Print final log message
+    print_final_log(logger)
     
     # Delete logger    
     for handler in logger.handlers:
@@ -268,13 +280,38 @@ def delete_files(txt_list, state_file_name, txt_file_list, logger):
     
     txt_file_list.unlink()
     logger.info(f"Deleted file from /tmp: {txt_file_list.name}")
+    
+def print_final_log(logger):
+    """Print final log message."""
+    
+    # Open file used to track data
+    log_file = pathlib.Path(os.environ.get("FINAL_LOG_MESSAGE"))
+    with open(log_file) as fh:
+        log_data = fh.read().splitlines()
+
+    # Organize file data into a string
+    execution_data = ""
+    processed = []
+    for line in log_data:
+        if "unique_id" in line: execution_data += line
+        if "dataset" in line: execution_data += f" - {line}"
+        if "number_downloads" in line: execution_data += f" - {line}"
+        if "processed" in line: processed.append(line.split("processed: ")[-1])
+    
+    final_log_message = ""
+    if execution_data: final_log_message += execution_data
+    if len(processed) > 0: final_log_message += f" - processed: {', '.join(processed)}"
+    
+    # Print final log message and remove temp log file
+    logger.info(final_log_message)
+    log_file.unlink()
         
 def handle_error(sigevent_description, sigevent_data, logger):
     """Handle errors by logging them and sending out a notification."""
     
     sigevent_type = "ERROR"
     logger.error(sigevent_description)
-    logger.error(sigevent_data)
+    logger.info(sigevent_data)
     notify(logger, sigevent_type, sigevent_description, sigevent_data)
-    logger.error("Program exit.")
+    logger.info("Program exit.")
     sys.exit(1)
