@@ -298,7 +298,7 @@ def print_final_log(logger):
         if "number_downloads" in line: execution_data += f" - {line}"
         if "processed" in line: processed.append(line.split("processed: ")[-1])
     
-    final_log_message = ""
+    final_log_message = "final_log: "
     if execution_data: final_log_message += execution_data
     if len(processed) > 0: final_log_message += f" - processed: {', '.join(processed)}"
     
