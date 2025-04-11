@@ -255,6 +255,19 @@ if ($processing_type == "VIIRS") then
    endif
 endif
 
+if ($processing_type == "JPSS1") then
+   # Set the processing to lowercase "jpss1"
+   set actual_processing_type = "jpss1"
+   set actual_filter = "$search_filter"
+   echo "startup_generic_downloader_job_index.csh - INFO: value_of_USE_2019_NAMING_PATTERN [$value_of_USE_2019_NAMING_PATTERN]"
+   if ($value_of_USE_2019_NAMING_PATTERN == "true") then
+       set actual_filter = "JPSS1_VIIRS*$year*.nc"
+   endif
+   if ($processing_level == "L2") then
+       set name_snippet = "viirs_level2"
+   endif
+endif
+
 
 if ($processing_type == "MODIS_A") then
    # Set the processing to lowercase "aqua"
