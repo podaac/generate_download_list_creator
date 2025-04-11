@@ -226,6 +226,34 @@ resource "aws_scheduler_schedule" "aws_schedule_dlc_viirs" {
   }
 }
 
+# JPSS1
+resource "aws_scheduler_schedule" "aws_schedule_dlc_jpss1" {
+  name       = "${var.prefix}-dlc-jpss1"
+  group_name = "default"
+  flexible_time_window {
+    mode = "OFF"
+  }
+  schedule_expression = "cron(15 * * * ? *)"
+  target {
+    arn      = aws_lambda_function.aws_lambda_download_list_creator.arn
+    role_arn = aws_iam_role.aws_eventbridge_dlc_execution_role.arn
+    input = jsonencode({
+      "search_pattern" : "${var.jpss1_search_pattern}",
+      "processing_type" : "${var.jpss1_processing_type}",
+      "processing_level" : "${var.processing_level}",
+      "num_days_back" : "${var.num_days_back}",
+      "granule_start_date" : "${var.granule_start_date}",
+      "granule_end_date" : "${var.granule_end_date}",
+      "naming_pattern_indicator" : "${var.naming_pattern_indicator}",
+      "creation_date" : "${var.creation_date}",
+      "search_filter": "${var.jpss1_search_filter}",
+      "account" : "${local.account_id}",
+      "region" : "${var.aws_region}",
+      "prefix" : "${var.prefix}"
+    })
+  }
+}
+
 # EventBridge execution role and policy
 resource "aws_iam_role" "aws_eventbridge_dlc_execution_role" {
   name = "${var.prefix}-eventbridge-dlc-execution-role"
