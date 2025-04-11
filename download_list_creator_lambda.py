@@ -36,13 +36,15 @@ from write_final_log import write_final_log
 LOG_PREFIX = {
     "MODIS_A": "modis_level2_aqua_MODIS_A_download_list_creator_output",
     "MODIS_T": "modis_level2_terra_MODIS_T_download_list_creator_output",
-    "VIIRS": "viirs_level2_VIIRS_download_list_creator_output"
+    "VIIRS": "viirs_level2_VIIRS_download_list_creator_output",
+    "JPSS1": "jpss1_level2_VIIRS_download_list_creator_output"
 }
 
 DS_KEY = {
     "MODIS_A": "aqua",
     "MODIS_T": "terra",
-    "VIIRS": "viirs"
+    "VIIRS": "viirs",
+    "JPSS1": "jpss1"
 }
 
 UNIQUE_ID = random.randint(1000, 9999)    # To differentiate duplicate txt file names
