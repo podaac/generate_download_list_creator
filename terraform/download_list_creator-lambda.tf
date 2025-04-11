@@ -120,7 +120,8 @@ resource "aws_iam_policy" "aws_lambda_dlc_execution_policy" {
         "Resource" : [
           "${data.aws_sqs_queue.pending_jobs_aqua.arn}",
           "${data.aws_sqs_queue.pending_jobs_terra.arn}",
-          "${data.aws_sqs_queue.pending_jobs_viirs.arn}"
+          "${data.aws_sqs_queue.pending_jobs_viirs.arn}",
+          "${data.aws_sqs_queue.pending_jobs_jpss1.arn}"
         ]
       },
       {
