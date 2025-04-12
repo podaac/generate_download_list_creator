@@ -264,7 +264,7 @@ if ($processing_type == "JPSS1") then
        set actual_filter = "JPSS1_VIIRS*$year*.nc"
    endif
    if ($processing_level == "L2") then
-       set name_snippet = "viirs_level2"
+       set name_snippet = "jpss1_level2"
    endif
 endif
 
