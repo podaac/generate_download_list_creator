@@ -357,8 +357,8 @@ def main(argv):
     g_trace_flag = 1     # Change to 1 if want to see trace prints.  Typically used by developer to see more of the under the hood.    # NET edit.
     g_module_name = 'create_generic_download_list:'
 
-    os.environ["CRAWLER_SEARCH_DEBUG_FLAG"] = "false"    # NET edit.
-    os.environ["CRAWLER_SEARCH_TRACE_FLAG"] = "false"    # NET edit.
+    os.environ["CRAWLER_SEARCH_DEBUG_FLAG"] = "true"    # NET edit.
+    os.environ["CRAWLER_SEARCH_TRACE_FLAG"] = "true"    # NET edit.
     if (os.getenv("CRAWLER_SEARCH_DEBUG_FLAG") == "true"):
         g_debug_flag = 1
     if (os.getenv("CRAWLER_SEARCH_TRACE_FLAG") == "true"):
