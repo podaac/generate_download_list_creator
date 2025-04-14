@@ -136,5 +136,5 @@ variable "jpss1_search_filter" {
 variable "jpss1_search_pattern" {
   type        = string
   description = "Search pattern expression to search OBPG with"
-  default     = "JPSS1_VIIRS*L2*SST*.nc|JPSS1_VIIRS*L2*SST3*.nc"
+  default     = "JPSS1_VIIRS.*L2.SST.|JPSS1_VIIRS.*L2.SST3."
 }
