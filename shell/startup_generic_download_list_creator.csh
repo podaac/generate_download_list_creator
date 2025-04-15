@@ -22,7 +22,7 @@ source $LAMBDA_TASK_ROOT/config/download_list_creator_config
 
 # By default, the output of this C-shell script will go to a log file defined in downloader_log_name variable below.  If you want to see the log file as it is running, the following can be set:
 #
-setenv SHOW_LOGGING_TO_TERMINAL true
+setenv SHOW_LOGGING_TO_TERMINAL false
 
 set show_logging = 0
 if ($?SHOW_LOGGING_TO_TERMINAL) then
