@@ -451,6 +451,8 @@ def main(argv):
         elif opt in ("-x"):
              txt_file_list = arg
 
+    print(f'RANDY DEBUGGING: txt_file_list = {txt_file_list}')
+
     encountered_error_flag = False;
     
     # For yearly search, we can provided the ability to split up the query by month so as not to time out if that particular dataset is too big..
