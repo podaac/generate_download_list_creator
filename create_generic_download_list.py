@@ -1576,5 +1576,8 @@ def write_out_error_file(error):
         error_string = re.escape(error)
         fh.write(f"{error_string}\n")
 
+print("RANDY DEBUGGING OUTSIDE OF MAIN")
+
 if __name__ == "__main__":
-   main(sys.argv[1:])
+    print("RANDY DEBUGGING BEFORE MAIN")
+    main(sys.argv[1:])
