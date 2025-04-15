@@ -404,6 +404,8 @@ else
         ls /tmp
         echo "log file name: $downloader_log_name"
         cat $downloader_log_name
+        cat $OBPG_RUNENV_PYTHON_HOME/config/download_list_creator_config
+        echo "end print downloader_log_name"
     endif
 endif
 setenv TZ GMT
