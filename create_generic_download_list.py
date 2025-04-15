@@ -492,6 +492,7 @@ def main(argv):
                                                                         pattern_to_look_for,
                                                                         txt_file_list);
                 except Exception as e:
+                    print(f'RANDY DEBUG ERROR 1: {e}')
                     write_out_error_file(str(e))
                     print(f"{g_module_name} - INFO: Exiting with exit code 1.")
                     sys.exit(1)
@@ -524,12 +525,14 @@ def main(argv):
                                                                 pattern_to_look_for,
                                                                 txt_file_list);
         except Exception as e:
+            print(f'RANDY DEBUG ERROR 2: {e}')
             write_out_error_file(str(e))
             print(f"{g_module_name} - INFO: Exiting with exit code 1.")
             sys.exit(1)
 
     # Depend on if we had encountered an error or not, we exit with the appropriate code so an external program can decide what to do.
     if (encountered_error_flag):
+        print(f'RANDY DEBUG ERROR 3: {e}')
         write_out_error_file("Error encountered in create_generic_download_list function.")
         print(f"{g_module_name} - INFO: Exiting with exit code 1.")
         sys.exit(1)
