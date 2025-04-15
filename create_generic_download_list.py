@@ -352,6 +352,7 @@ from write_final_log import write_final_log
 
 def main(argv):
     print('RANDY RUNNING DOWNLOAD LIST DEBUGGING')
+    print(f'argv inputs: {argv}')
     global g_debug_flag; # Make variable global.
     global g_trace_flag; # Make variable global.
     g_debug_flag = 1     # Change to 1 if want to see debug prints.    # NET edit.
