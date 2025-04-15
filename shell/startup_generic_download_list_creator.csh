@@ -402,6 +402,7 @@ else
         setenv TZ PST8PDT
         echo 'startup_generic_downloader_job_index.csh - INFO: create_generic_download_list:END_PROCESSING_TIME ' `date` | tee $downloader_log_name
         ls /tmp
+        echo "log file name: $downloader_log_name"
         cat $downloader_log_name
     endif
 endif
