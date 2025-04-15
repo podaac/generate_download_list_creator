@@ -507,6 +507,7 @@ def main(argv):
     # end while not encountered_error_flag
     else:
         try:
+            print(f'RUNNING create_generic_download_list with txt_file_list = {txt_file_list}')
             encountered_error_flag = create_generic_download_list(search_dtype,       # L2
                                                                 search_filter,      # "V2015001235*SST.nc" (must be inside double quotes)
                                                                 search_sensor,      # viirs (This script support viirs sensor only)
