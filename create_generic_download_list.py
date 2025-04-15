@@ -418,6 +418,7 @@ def main(argv):
           print('python create_generic_download_list.py -l l3m -t "A2016241*.nc" -n modis -d 0 -f 1 -a 1 -c 1 -s "2016-08-28" -e "2016-08-28" -g daily -x "/tmp/txt_file_list"')
           sys.exit(2)
     for opt, arg in opts:
+        print(f'DEBUGGING: opt/arg: {opt}:{arg}')
         if opt == '-h':
              print('test.py -i <inputfile> -o <outputfile>')
              sys.exit()
