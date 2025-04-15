@@ -392,7 +392,7 @@ else
 
     if $show_logging == 1 then
         echo "RANDY DEBUG 5"
-        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level "-t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -b "crawl_current" -i "$state_file_name" -z "$num_days_back" -x "$txt_file_list"   # NET edit.
+        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level" -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -b "crawl_current" -i "$state_file_name" -z "$num_days_back" -x "$txt_file_list"   # NET edit.
         setenv TZ PST8PDT
         echo 'startup_generic_downloader_job_index.csh - INFO: create_generic_download_list:END_PROCESSING_TIME ' `date`
     else
