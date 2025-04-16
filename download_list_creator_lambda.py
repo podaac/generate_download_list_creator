@@ -95,10 +95,6 @@ def event_handler(event, context):
     # Execute shell script
     lambda_task_root = os.getenv('LAMBDA_TASK_ROOT')
     try:
-        print(f"CSH COMMAND: {lambda_task_root}/shell/startup_generic_download_list_creator.csh", \
-            search_pattern, output_directory, processing_type, processing_level, \
-            state_file_name, num_days_back, txt_file_list, year, creation_date, search_filter, \
-            granule_start_date, granule_end_date, naming_pattern_indicator)
         subprocess.run([f"{lambda_task_root}/shell/startup_generic_download_list_creator.csh", \
             search_pattern, output_directory, processing_type, processing_level, \
             state_file_name, num_days_back, txt_file_list, year, creation_date, search_filter, \

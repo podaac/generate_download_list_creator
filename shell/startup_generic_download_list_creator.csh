@@ -363,26 +363,20 @@ echo 'startup_generic_downloader_job_index.csh - INFO: create_generic_download_l
 #exit
 set python_exe = `printenv | grep PYTHON3_EXECUTABLE_PATH | awk -F= '{print $2}'`    # NET edit.
 if ($granule_start_date != "" && $granule_end_date != "") then
-
-    echo "RANDY DEBUG 1"
-
     echo "startup_generic_downloader_job_index.csh - INFO: RUNNING_CREATE_GENERIC_DOWNLOAD_LIST_WITH_ACTUAL_START_AND_DATE"
     echo "startup_generic_downloader_job_index.csh - INFO: $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t "  "'$actual_filter'" " -d 0 -f 1 -a 1 -c 1 -g daily -s $granule_start_date -e $granule_end_date -i $state_file_name -x $txt_file_list"    # NET edit.
     # Reset the time zone back to GMT so we can have the correct current date when the Python script runs.
     setenv TZ GMT
     if $show_logging == 1 then
-        echo "RANDY DEBUG 2"
         $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level" -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -s "$granule_start_date" -e "$granule_end_date" -i "$state_file_name" -x "$txt_file_list"    # NET edit.
         setenv TZ PST8PDT
         echo 'startup_generic_downloader_job_index.csh - INFO: create_generic_download_list:END_PROCESSING_TIME ' `date`
     else
-        echo "RANDY DEBUG 3"
         $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level" -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -s "$granule_start_date" -e "$granule_end_date" -i "$state_file_name" -x "$txt_file_list" | tee $downloader_log_name    # NET edit.
         setenv TZ PST8PDT
         echo 'startup_generic_downloader_job_index.csh - INFO: create_generic_download_list:END_PROCESSING_TIME ' `date` | tee $downloader_log_name
     endif
 else
-    echo "RANDY DEBUG 4"
     # If the granule_start_date and granule_start_date are empty string, we use the -b crawl_current to get files from a few days ago.
     echo "startup_generic_downloader_job_index.csh - INFO: RUNNING_CREATE_GENERIC_DOWNLOAD_LIST_WITH_EMPTY_START_AND_DATE"
     echo "$python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t " "'$actual_filter'" " -d 0 -f 1 -a 1 -c 1 -g daily -b crawl_current -i $state_file_name -z $num_days_back -x $txt_file_list" | tee $downloader_log_name   # NET edit.
@@ -391,17 +385,14 @@ else
 
 
     if $show_logging == 1 then
-        echo "RANDY DEBUG 5"
         $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level" -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -b "crawl_current" -i "$state_file_name" -z "$num_days_back" -x "$txt_file_list"   # NET edit.
         setenv TZ PST8PDT
         echo 'startup_generic_downloader_job_index.csh - INFO: create_generic_download_list:END_PROCESSING_TIME ' `date`
     else
-        echo "RANDY DEBUG 6"
-        echo "startup_generic_downloader_job_index.csh - INFO: $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t $actual_filter -d 0 -f 1 -a 1 -c 1 -g daily -b crawl_current -i $state_file_name -z $num_days_back -x $txt_file_list | tee $downloader_log_name"    # NET edit.
+        # echo "startup_generic_downloader_job_index.csh - INFO: $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n $actual_processing_type -l $processing_level -t $actual_filter -d 0 -f 1 -a 1 -c 1 -g daily -b crawl_current -i $state_file_name -z $num_days_back -x $txt_file_list | tee $downloader_log_name"    # NET edit.
         $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level" -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -b "crawl_current" -i "$state_file_name" -z "$num_days_back" -x "$txt_file_list" | tee $downloader_log_name    # NET edit.
         setenv TZ PST8PDT
         echo 'startup_generic_downloader_job_index.csh - INFO: create_generic_download_list:END_PROCESSING_TIME ' `date` | tee $downloader_log_name
-        $python_exe $OBPG_RUNENV_PYTHON_HOME/testing_running_python.py
     endif
 endif
 setenv TZ GMT

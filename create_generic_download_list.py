@@ -351,16 +351,14 @@ from write_final_log import write_final_log
 #
 
 def main(argv):
-    print('RANDY RUNNING DOWNLOAD LIST DEBUGGING')
-    print(f'argv inputs: {argv}')
     global g_debug_flag; # Make variable global.
     global g_trace_flag; # Make variable global.
     g_debug_flag = 1     # Change to 1 if want to see debug prints.    # NET edit.
     g_trace_flag = 1     # Change to 1 if want to see trace prints.  Typically used by developer to see more of the under the hood.    # NET edit.
     g_module_name = 'create_generic_download_list:'
 
-    os.environ["CRAWLER_SEARCH_DEBUG_FLAG"] = "true"    # NET edit.
-    os.environ["CRAWLER_SEARCH_TRACE_FLAG"] = "true"    # NET edit.
+    os.environ["CRAWLER_SEARCH_DEBUG_FLAG"] = "false"    # NET edit.
+    os.environ["CRAWLER_SEARCH_TRACE_FLAG"] = "false"    # NET edit.
     if (os.getenv("CRAWLER_SEARCH_DEBUG_FLAG") == "true"):
         g_debug_flag = 1
     if (os.getenv("CRAWLER_SEARCH_TRACE_FLAG") == "true"):
@@ -418,7 +416,6 @@ def main(argv):
           print('python create_generic_download_list.py -l l3m -t "A2016241*.nc" -n modis -d 0 -f 1 -a 1 -c 1 -s "2016-08-28" -e "2016-08-28" -g daily -x "/tmp/txt_file_list"')
           sys.exit(2)
     for opt, arg in opts:
-        print(f'DEBUGGING: opt/arg: {opt}:{arg}')
         if opt == '-h':
              print('test.py -i <inputfile> -o <outputfile>')
              sys.exit()
@@ -451,8 +448,6 @@ def main(argv):
              search_days_back = int(arg) # How many days back to search for file processing date start.  Default is 1 
         elif opt in ("-x"):
              txt_file_list = arg
-
-    print(f'RANDY DEBUGGING: txt_file_list = {txt_file_list}')
 
     encountered_error_flag = False;
     
@@ -496,7 +491,6 @@ def main(argv):
                                                                         pattern_to_look_for,
                                                                         txt_file_list);
                 except Exception as e:
-                    print(f'RANDY DEBUG ERROR 1: {e}')
                     write_out_error_file(str(e))
                     print(f"{g_module_name} - INFO: Exiting with exit code 1.")
                     sys.exit(1)
@@ -511,7 +505,6 @@ def main(argv):
     # end while not encountered_error_flag
     else:
         try:
-            print(f'RUNNING create_generic_download_list with txt_file_list = {txt_file_list}')
             encountered_error_flag = create_generic_download_list(search_dtype,       # L2
                                                                 search_filter,      # "V2015001235*SST.nc" (must be inside double quotes)
                                                                 search_sensor,      # viirs (This script support viirs sensor only)
@@ -530,14 +523,12 @@ def main(argv):
                                                                 pattern_to_look_for,
                                                                 txt_file_list);
         except Exception as e:
-            print(f'RANDY DEBUG ERROR 2: {e}')
             write_out_error_file(str(e))
             print(f"{g_module_name} - INFO: Exiting with exit code 1.")
             sys.exit(1)
 
     # Depend on if we had encountered an error or not, we exit with the appropriate code so an external program can decide what to do.
     if (encountered_error_flag):
-        print(f'RANDY DEBUG ERROR 3: {e}')
         write_out_error_file("Error encountered in create_generic_download_list function.")
         print(f"{g_module_name} - INFO: Exiting with exit code 1.")
         sys.exit(1)
@@ -1576,8 +1567,5 @@ def write_out_error_file(error):
         error_string = re.escape(error)
         fh.write(f"{error_string}\n")
 
-print("RANDY DEBUGGING OUTSIDE OF MAIN")
-
 if __name__ == "__main__":
-    print("RANDY DEBUGGING BEFORE MAIN")
     main(sys.argv[1:])
