@@ -150,7 +150,6 @@ resource "aws_scheduler_schedule" "aws_schedule_dlc_aqua" {
   flexible_time_window {
     mode = "OFF"
   }
-  state      = "DISABLED"
   schedule_expression = "cron(0 * * * ? *)"
   target {
     arn      = aws_lambda_function.aws_lambda_download_list_creator.arn
@@ -179,7 +178,6 @@ resource "aws_scheduler_schedule" "aws_schedule_dlc_terra" {
   flexible_time_window {
     mode = "OFF"
   }
-  state      = "DISABLED"
   schedule_expression = "cron(5 * * * ? *)"
   target {
     arn      = aws_lambda_function.aws_lambda_download_list_creator.arn
@@ -208,7 +206,6 @@ resource "aws_scheduler_schedule" "aws_schedule_dlc_viirs" {
   flexible_time_window {
     mode = "OFF"
   }
-  state      = "DISABLED"
   schedule_expression = "cron(10 * * * ? *)"
   target {
     arn      = aws_lambda_function.aws_lambda_download_list_creator.arn
