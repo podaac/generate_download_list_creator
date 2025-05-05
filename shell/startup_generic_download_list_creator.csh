@@ -255,6 +255,19 @@ if ($processing_type == "VIIRS") then
    endif
 endif
 
+if ($processing_type == "JPSS1") then
+   # Set the processing to lowercase "jpss1"
+   set actual_processing_type = "jpss1"
+   set actual_filter = "$search_filter"
+   echo "startup_generic_downloader_job_index.csh - INFO: value_of_USE_2019_NAMING_PATTERN [$value_of_USE_2019_NAMING_PATTERN]"
+   if ($value_of_USE_2019_NAMING_PATTERN == "true") then
+       set actual_filter = "JPSS1_VIIRS*$year*.nc"
+   endif
+   if ($processing_level == "L2") then
+       set name_snippet = "jpss1_level2"
+   endif
+endif
+
 
 if ($processing_type == "MODIS_A") then
    # Set the processing to lowercase "aqua"
@@ -372,7 +385,7 @@ else
 
 
     if $show_logging == 1 then
-        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level "-t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -b "crawl_current" -i "$state_file_name" -z "$num_days_back" -x "$txt_file_list"   # NET edit.
+        $python_exe $OBPG_RUNENV_PYTHON_HOME/create_generic_download_list.py -n "$actual_processing_type" -l "$processing_level" -t "$actual_filter" -d 0 -f 1 -a 1 -c 1 -g "daily" -b "crawl_current" -i "$state_file_name" -z "$num_days_back" -x "$txt_file_list"   # NET edit.
         setenv TZ PST8PDT
         echo 'startup_generic_downloader_job_index.csh - INFO: create_generic_download_list:END_PROCESSING_TIME ' `date`
     else

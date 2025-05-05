@@ -120,3 +120,21 @@ variable "viirs_search_pattern" {
   description = "Search pattern expression to search OBPG with"
   default     = "SNPP_VIIRS.*SST.|SNPP_VIIRS.*SST3."
 }
+
+variable "jpss1_processing_type" {
+  type        = string
+  description = "Generate workflow dataset to execute on"
+  default     = "JPSS1"
+}
+
+variable "jpss1_search_filter" {
+  type        = string
+  description = "Search filter expression to query OBPG"
+  default     = "JPSS1_VIIRS*L2*SST*"
+}
+
+variable "jpss1_search_pattern" {
+  type        = string
+  description = "Search pattern expression to search OBPG with"
+  default     = "JPSS1_VIIRS.*SST.|JPSS1_VIIRS.*SST3."
+}

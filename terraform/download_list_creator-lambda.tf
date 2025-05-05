@@ -4,7 +4,7 @@ resource "aws_lambda_function" "aws_lambda_download_list_creator" {
   function_name = "${var.prefix}-download-list-creator"
   role          = aws_iam_role.aws_lambda_dlc_execution_role.arn
   package_type  = "Image"
-  memory_size   = 256
+  memory_size   = 2048
   timeout       = 900
   vpc_config {
     subnet_ids         = data.aws_subnets.private_application_subnets.ids
@@ -120,7 +120,8 @@ resource "aws_iam_policy" "aws_lambda_dlc_execution_policy" {
         "Resource" : [
           "${data.aws_sqs_queue.pending_jobs_aqua.arn}",
           "${data.aws_sqs_queue.pending_jobs_terra.arn}",
-          "${data.aws_sqs_queue.pending_jobs_viirs.arn}"
+          "${data.aws_sqs_queue.pending_jobs_viirs.arn}",
+          "${data.aws_sqs_queue.pending_jobs_jpss1.arn}"
         ]
       },
       {
@@ -219,6 +220,34 @@ resource "aws_scheduler_schedule" "aws_schedule_dlc_viirs" {
       "naming_pattern_indicator" : "${var.naming_pattern_indicator}",
       "creation_date" : "${var.creation_date}",
       "search_filter": "${var.viirs_search_filter}",
+      "account" : "${local.account_id}",
+      "region" : "${var.aws_region}",
+      "prefix" : "${var.prefix}"
+    })
+  }
+}
+
+# JPSS1
+resource "aws_scheduler_schedule" "aws_schedule_dlc_jpss1" {
+  name       = "${var.prefix}-dlc-jpss1"
+  group_name = "default"
+  flexible_time_window {
+    mode = "OFF"
+  }
+  schedule_expression = "cron(15 * * * ? *)"
+  target {
+    arn      = aws_lambda_function.aws_lambda_download_list_creator.arn
+    role_arn = aws_iam_role.aws_eventbridge_dlc_execution_role.arn
+    input = jsonencode({
+      "search_pattern" : "${var.jpss1_search_pattern}",
+      "processing_type" : "${var.jpss1_processing_type}",
+      "processing_level" : "${var.processing_level}",
+      "num_days_back" : "${var.num_days_back}",
+      "granule_start_date" : "${var.granule_start_date}",
+      "granule_end_date" : "${var.granule_end_date}",
+      "naming_pattern_indicator" : "${var.naming_pattern_indicator}",
+      "creation_date" : "${var.creation_date}",
+      "search_filter": "${var.jpss1_search_filter}",
       "account" : "${local.account_id}",
       "region" : "${var.aws_region}",
       "prefix" : "${var.prefix}"
