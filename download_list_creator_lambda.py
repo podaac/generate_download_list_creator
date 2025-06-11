@@ -63,6 +63,7 @@ def event_handler(event, context):
     granule_end_date = event["granule_end_date"]
     naming_pattern_indicator = event["naming_pattern_indicator"] if "naming_pattern_indicator" in event.keys() else ""
     creation_date = event["creation_date"]
+    search_filter = event["search_filter"]
     if granule_start_date == "dummy" and granule_end_date == "dummy": 
         year = f"{datetime.datetime.now().year}"
     else:
@@ -94,7 +95,7 @@ def event_handler(event, context):
     try:
         subprocess.run([f"{lambda_task_root}/shell/startup_generic_download_list_creator.csh", \
             search_pattern, output_directory, processing_type, processing_level, \
-            state_file_name, num_days_back, txt_file_list, year, creation_date, \
+            state_file_name, num_days_back, txt_file_list, year, creation_date, search_filter, \
             granule_start_date, granule_end_date, naming_pattern_indicator], \
             cwd=f"{lambda_task_root}/shell", check=True, stderr=PIPE)
     except subprocess.CalledProcessError as e:

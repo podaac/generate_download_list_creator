@@ -162,6 +162,7 @@ resource "aws_scheduler_schedule" "aws_schedule_dlc_aqua" {
       "granule_end_date" : "${var.granule_end_date}",
       "naming_pattern_indicator" : "${var.naming_pattern_indicator}",
       "creation_date" : "${var.creation_date}",
+      "search_filter": "${var.aqua_search_filter}",
       "account" : "${local.account_id}",
       "region" : "${var.aws_region}",
       "prefix" : "${var.prefix}"
@@ -189,6 +190,7 @@ resource "aws_scheduler_schedule" "aws_schedule_dlc_terra" {
       "granule_end_date" : "${var.granule_end_date}",
       "naming_pattern_indicator" : "${var.naming_pattern_indicator}",
       "creation_date" : "${var.creation_date}",
+      "search_filter": "${var.terra_search_filter}",
       "account" : "${local.account_id}",
       "region" : "${var.aws_region}",
       "prefix" : "${var.prefix}"
@@ -216,6 +218,7 @@ resource "aws_scheduler_schedule" "aws_schedule_dlc_viirs" {
       "granule_end_date" : "${var.granule_end_date}",
       "naming_pattern_indicator" : "${var.naming_pattern_indicator}",
       "creation_date" : "${var.creation_date}",
+      "search_filter": "${var.viirs_search_filter}",
       "account" : "${local.account_id}",
       "region" : "${var.aws_region}",
       "prefix" : "${var.prefix}"
