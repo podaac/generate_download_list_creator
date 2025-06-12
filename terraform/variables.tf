@@ -19,7 +19,7 @@ variable "aqua_processing_type" {
 variable "aqua_search_filter" {
   type        = string
   description = "Search filter expression to query OBPG"
-  default     = "A*202*.nc"
+  default     = "AQUA_MODIS.2025*.nc"
 }
 
 variable "aqua_search_pattern" {
@@ -94,7 +94,7 @@ variable "terra_processing_type" {
 variable "terra_search_filter" {
   type        = string
   description = "Search filter expression to query OBPG"
-  default     = "T*202*.nc"
+  default     = "TERRA_MODIS.2025*.nc"
 }
 
 variable "terra_search_pattern" {
@@ -112,7 +112,7 @@ variable "viirs_processing_type" {
 variable "viirs_search_filter" {
   type        = string
   description = "Search filter expression to query OBPG"
-  default     = "SNPP_VIIRS*202*"
+  default     = "SNPP_VIIRS.2025*"
 }
 
 variable "viirs_search_pattern" {
