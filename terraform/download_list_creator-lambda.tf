@@ -6,6 +6,9 @@ resource "aws_lambda_function" "aws_lambda_download_list_creator" {
   package_type  = "Image"
   memory_size   = 2048
   timeout       = 900
+  ephemeral_storage {
+    size = 2048 # Min 512 MB and the Max 10240 MB
+  }
   vpc_config {
     subnet_ids         = data.aws_subnets.private_application_subnets.ids
     security_group_ids = data.aws_security_groups.vpc_default_sg.ids
@@ -146,6 +149,7 @@ resource "aws_iam_policy" "aws_lambda_dlc_execution_policy" {
 resource "aws_scheduler_schedule" "aws_schedule_dlc_aqua" {
   name       = "${var.prefix}-dlc-aqua"
   group_name = "default"
+  state               = "DISABLED"
   flexible_time_window {
     mode = "OFF"
   }
@@ -174,6 +178,7 @@ resource "aws_scheduler_schedule" "aws_schedule_dlc_aqua" {
 resource "aws_scheduler_schedule" "aws_schedule_dlc_terra" {
   name       = "${var.prefix}-dlc-terra"
   group_name = "default"
+  state               = "DISABLED"
   flexible_time_window {
     mode = "OFF"
   }
@@ -202,6 +207,7 @@ resource "aws_scheduler_schedule" "aws_schedule_dlc_terra" {
 resource "aws_scheduler_schedule" "aws_schedule_dlc_viirs" {
   name       = "${var.prefix}-dlc-viirs"
   group_name = "default"
+  state               = "DISABLED"
   flexible_time_window {
     mode = "OFF"
   }
