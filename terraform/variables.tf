@@ -16,6 +16,12 @@ variable "aqua_processing_type" {
   default     = "MODIS_A"
 }
 
+variable "aqua_search_filter" {
+  type        = string
+  description = "Search filter expression to query OBPG"
+  default     = "AQUA_MODIS.2025*.nc"
+}
+
 variable "aqua_search_pattern" {
   type        = string
   description = "Search pattern expression to search OBPG with"
@@ -85,6 +91,12 @@ variable "terra_processing_type" {
   default     = "MODIS_T"
 }
 
+variable "terra_search_filter" {
+  type        = string
+  description = "Search filter expression to query OBPG"
+  default     = "TERRA_MODIS.2025*.nc"
+}
+
 variable "terra_search_pattern" {
   type        = string
   description = "Search pattern expression to search OBPG with"
@@ -95,6 +107,12 @@ variable "viirs_processing_type" {
   type        = string
   description = "Generate workflow dataset to execute on"
   default     = "VIIRS"
+}
+
+variable "viirs_search_filter" {
+  type        = string
+  description = "Search filter expression to query OBPG"
+  default     = "SNPP_VIIRS.2025*"
 }
 
 variable "viirs_search_pattern" {

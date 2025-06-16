@@ -45,6 +45,7 @@ import re
 import requests
 import sys
 import time
+import traceback
 #import urllib.request, urllib.error, urllib.parse
 
 from generic_split_search_dates_into_months import generic_split_search_dates_into_months;
@@ -377,7 +378,7 @@ def main(argv):
     search_dtype    = ""  # L2
     search_filter   = ""  # "V2015001235*SST.nc" (must be inside double quotes)
     search_sensor   = ""  # viirs (This script support viirs sensor only)
-    search_std_only = "0" # Boolean, avoid non standard files
+    search_std_only = "1" # Boolean, avoid non standard files.
     search_as_file  = "1" # Boolean, get the result as a file.
     search_addurl   = "1" # Boolean, 1 will prepend "http://oceandata.sci.gsfc.nasa.gov/cgi/getfile/" to the file name.
     checksum_flag   = "1" # Boolean, 1 will result in the checksum of the file prepended to filename and a space.  This script will do some post processing to produce the correct output.
@@ -491,6 +492,7 @@ def main(argv):
                                                                         pattern_to_look_for,
                                                                         txt_file_list);
                 except Exception as e:
+                    traceback.print_exc()
                     write_out_error_file(str(e))
                     print(f"{g_module_name} - INFO: Exiting with exit code 1.")
                     sys.exit(1)
@@ -523,6 +525,7 @@ def main(argv):
                                                                 pattern_to_look_for,
                                                                 txt_file_list);
         except Exception as e:
+            traceback.print_exc()
             write_out_error_file(str(e))
             print(f"{g_module_name} - INFO: Exiting with exit code 1.")
             sys.exit(1)
